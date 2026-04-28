@@ -1,0 +1,95 @@
+# === Flutter/Dart standard ===
+# Compiled files
+*.dart_tool/
+.dart_tool/
+.packages
+.pub/
+build/
+flutter_*.png
+coverage/
+
+# iOS
+ios/.generated/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+ios/Flutter/app.flx
+ios/Flutter/app.zip
+ios/Flutter/flutter_assets/
+ios/Flutter/flutter_export_environment.sh
+ios/ServiceDefinitions.json
+ios/Runner/GeneratedPluginRegistrant.*
+ios/Pods/
+ios/Podfile.lock
+**/Pods/
+
+# Android
+android/.gradle/
+android/captures/
+android/gradlew
+android/gradlew.bat
+android/local.properties
+android/app/debug
+android/app/profile
+android/app/release
+**/android/key.properties
+*.jks
+*.keystore
+
+# macOS
+macos/Flutter/GeneratedPluginRegistrant.swift
+macos/Flutter/ephemeral/
+macos/Pods/
+macos/Podfile.lock
+
+# Windows
+windows/flutter/generated_plugin_registrant.cc
+windows/flutter/generated_plugin_registrant.h
+windows/flutter/ephemeral/
+
+# Linux  
+linux/flutter/generated_plugin_registrant.cc
+linux/flutter/generated_plugin_registrant.h
+linux/flutter/ephemeral/
+
+# Web
+web/favicon.png
+lib/generated_plugin_registrant.dart
+
+# === Firebase ===
+# Firebase config with API keys
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+lib/firebase_options.dart
+firebase-debug.log
+firebase-debug.*.log
+.firebaserc
+firebase.json
+
+# Firebase Emulator
+.firebase/
+*.rules
+
+# Functions
+functions/node_modules/
+functions/.env
+functions/.env.*
+functions/lib/
+functions/*.log
+
+# === IDE / Editor ===
+.vscode/
+.idea/
+*.iml
+*.iws
+*.ipr
+.DS_Store
+*.swp
+*.swo
+*~
+
+# === Misc ===
+.env
+.env.local
+.env.*.local
+*.log
