@@ -57,7 +57,6 @@ class DefaultFirebaseOptions {
     projectId: 'yem-event-signatures',
     storageBucket: 'yem-event-signatures.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyCczenJkLS9df3vxX7yNmWO9e6_rDLc9U0',
     appId: '1:2424897465:ios:24be000711c92a14e40068',
@@ -66,7 +65,6 @@ class DefaultFirebaseOptions {
     storageBucket: 'yem-event-signatures.firebasestorage.app',
     iosBundleId: 'com.example.yemEventsSignature',
   );
-
   static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyCczenJkLS9df3vxX7yNmWO9e6_rDLc9U0',
     appId: '1:2424897465:ios:24be000711c92a14e40068',

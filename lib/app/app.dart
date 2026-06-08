@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../features/auth/presentation/Pages/login.dart';
+import '../features/auth/presentation/Pages/homepage.dart';
 import '../features/auth/presentation/providers/auth_providers.dart';
 
 class MyApp extends ConsumerWidget {
@@ -19,30 +20,6 @@ class MyApp extends ConsumerWidget {
         loading: () =>
             Scaffold(body: Center(child: CircularProgressIndicator())),
       ),
-    );
-  }
-}
-
-class HomePage extends ConsumerWidget {
-  const HomePage({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref
-        .watch(authStateProvider)
-        .maybeWhen(data: (user) => user, orElse: () => null);
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home'),
-        actions: [
-          IconButton(
-            onPressed: () =>
-                ref.read(authControllerProvider.notifier).signOut(),
-            icon: Icon(Icons.logout),
-          ),
-        ],
-      ),
-      body: Center(child: Text('Logged in as: ${user?.email ?? "Unknown"}')),
     );
   }
 }
