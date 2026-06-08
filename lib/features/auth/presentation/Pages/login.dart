@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../providers/auth_providers.dart';
 
 class Login extends ConsumerStatefulWidget {
@@ -23,7 +24,8 @@ class _LoginState extends ConsumerState<Login> {
   }
 
   Future<void> _submit() async {
-    if (_formkey.currentState!.validate()) {
+    FocusScope.of(context).unfocus();
+    if (!_formkey.currentState!.validate()) {
       return;
     }
     final authController = ref.read(authControllerProvider.notifier);
@@ -39,15 +41,40 @@ class _LoginState extends ConsumerState<Login> {
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authControllerProvider);
-
-    ref.listen(authControllerProvider, (_, state) {
-      if (state.hasError) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(state.error.toString())));
-      }
+    ref.listen(authControllerProvider, (previous, next) {
+      next.whenOrNull(
+        error: (error, _) {
+          String message = 'Something went wrong';
+          if (error is FirebaseAuthException) {
+            switch (error.code) {
+              case 'user-not-found':
+                message = 'No user found for that email';
+                break;
+              case 'wrong-password':
+                message = 'Wrong password';
+                break;
+              case 'email-already-in-use':
+                message = 'Email already registered';
+                break;
+              case 'weak-password':
+                message = 'Password too weak';
+                break;
+              case 'operation-not-allowed':
+                message = 'Email/password login disabled in Firebase Console';
+                break;
+              default:
+                message = error.message ?? 'Auth error';
+            }
+          }
+          print('AUTH ERROR: ${error.toString()}'); // Still log it
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(message)));
+        },
+      );
     });
+
+    final authState = ref.watch(authControllerProvider);
 
     return Scaffold(
       appBar: AppBar(title: Text(_isLogin ? 'Login' : 'Sign Up')),
