@@ -56,7 +56,7 @@ class HomePage extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text(
-                'Welcome to the Home Page!',
+                'Welcome to Yemmy Events Signature!',
                 style: TextStyle(fontSize: 24.0),
               ),
               const SizedBox(height: 16.0),
