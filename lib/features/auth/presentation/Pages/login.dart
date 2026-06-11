@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../providers/auth_providers.dart';
+import 'main_page.dart';
 
 class Login extends ConsumerStatefulWidget {
   const Login({super.key});
@@ -66,12 +67,22 @@ class _LoginState extends ConsumerState<Login> {
                 message = error.message ?? 'Auth error';
             }
           }
-          print('AUTH ERROR: ${error.toString()}'); // Still log it
+          debugPrint('AUTH ERROR: ${error.toString()}');
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text(message)));
         },
       );
+    });
+
+    ref.listen<User?>(currentUserProvider, (previous, next) {
+      if (previous == null && next != null) {
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const MainPage()),
+          );
+        }
+      }
     });
 
     final authState = ref.watch(authControllerProvider);

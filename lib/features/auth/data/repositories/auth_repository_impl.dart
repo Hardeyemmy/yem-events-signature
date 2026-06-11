@@ -12,23 +12,22 @@ class AuthRepositoryImpl implements AuthRepository {
   Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
 
   @override
-  Future<UserCredential> signInWithEmail({
+  Future<void> signInWithEmail({
     required String email,
     required String password,
-  }) {
-    // Don't wrap in try-catch. Let FirebaseAuthException bubble up.
-    return _firebaseAuth.signInWithEmailAndPassword(
+  }) async {
+    await _firebaseAuth.signInWithEmailAndPassword(
       email: email,
       password: password,
     );
   }
 
   @override
-  Future<UserCredential> signUpWithEmail({
+  Future<void> signUpWithEmail({
     required String email,
     required String password,
-  }) {
-    return _firebaseAuth.createUserWithEmailAndPassword(
+  }) async {
+    await _firebaseAuth.createUserWithEmailAndPassword(
       email: email,
       password: password,
     );
@@ -37,4 +36,3 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> signOut() => _firebaseAuth.signOut();
 }
-

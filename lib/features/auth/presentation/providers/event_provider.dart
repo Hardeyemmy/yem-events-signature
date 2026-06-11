@@ -1,7 +1,5 @@
 import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../../data/repositories/event_repository.dart';
 import '../../../events/domains/models/events.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
