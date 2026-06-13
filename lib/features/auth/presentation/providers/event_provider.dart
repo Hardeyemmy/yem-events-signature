@@ -45,3 +45,50 @@ class CreateEventController extends AsyncNotifier<void> {
     );
   }
 }
+
+final eventDetailsProvider = StreamProvider.family<Event, String>((
+  ref,
+  eventId,
+) {
+  return ref.watch(eventRepositoryProvider).watchEvent(eventId);
+});
+
+final isAttendingProvider = StreamProvider.family<bool, String>((ref, eventId) {
+  final user = ref.read(currentUserProvider);
+  if (user == null) return const Stream.empty();
+  return ref.watch(eventRepositoryProvider).isAttending(eventId, user.uid);
+});
+
+final attendeeCountProvider = StreamProvider.family<int, String>((
+  ref,
+  eventId,
+) {
+  return ref.watch(eventRepositoryProvider).attendeesCount(eventId);
+});
+
+final rsvpControllerProvider =
+    AsyncNotifierProvider.autoDispose<RsvpController, void>(RsvpController.new);
+
+class RsvpController extends AsyncNotifier<void> {
+  @override
+  FutureOr<void> build() {}
+
+  Future<void> toggleRsvp(String eventId) async {
+    final user = ref.read(currentUserProvider);
+    if (user == null) return;
+
+    state = const AsyncValue<void>.loading();
+    final repo = ref.read(eventRepositoryProvider);
+    final isCurrentlyAttending = await ref.read(
+      isAttendingProvider(eventId).future,
+    );
+
+    state = await AsyncValue.guard(() async {
+      if (isCurrentlyAttending) {
+        await repo.cancelRsvp(eventId, user.uid);
+      } else {
+        await repo.rsvpToEvent(eventId, user.uid, user.email ?? '');
+      }
+    });
+  }
+}

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../events/domains/models/events.dart';
 import '../../presentation/providers/event_provider.dart';
+import 'event_details_page.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -63,78 +64,24 @@ class _EventCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('EEE, MMM d • h:mm a');
-
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () {
-          // TODO: Navigate to EventDetailsPage
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Tapped: ${event.title}')));
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      event.title,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  const Icon(Icons.chevron_right),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  const Icon(Icons.calendar_today, size: 16),
-                  const SizedBox(width: 8),
-                  Text(
-                    dateFormat.format(event.date),
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  const Icon(Icons.location_on, size: 16),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      event.location,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                event.description,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'By ${event.creatorEmail}',
-                style: Theme.of(
-                  context,
-                ).textTheme.labelSmall?.copyWith(color: Colors.grey[500]),
-              ),
-            ],
-          ),
+      child: ListTile(
+        title: Text(
+          event.title,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
+        subtitle: Text('${dateFormat.format(event.date)}\n${event.location}'),
+        isThreeLine: true,
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => EventDetailPage(eventId: event.id),
+            ),
+          );
+        },
       ),
     );
   }
