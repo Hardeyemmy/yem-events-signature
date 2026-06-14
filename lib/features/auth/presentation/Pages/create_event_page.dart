@@ -76,6 +76,7 @@ class _CreateEventPageState extends ConsumerState<CreateEventPage> {
     ref.listen(createEventControllerProvider, (prev, next) {
       next.whenOrNull(
         data: (_) {
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Event created successfully!')),
           );
@@ -86,8 +87,10 @@ class _CreateEventPageState extends ConsumerState<CreateEventPage> {
           setState(() {
             _selectedDate = null;
           });
+          // Event created successfully; reset form.
         },
         error: (err, _) {
+          if (!mounted) return;
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text(err.toString())));

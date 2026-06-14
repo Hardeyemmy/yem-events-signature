@@ -117,7 +117,8 @@ class EventDetailPage extends ConsumerWidget {
       ),
       floatingActionButton:
           eventAsync.value != null &&
-              eventAsync.value!.creatorId != currentUser?.uid
+              currentUser != null &&
+              eventAsync.value!.creatorId != currentUser.uid
           ? isAttendingAsync.when(
               data: (isAttending) => FloatingActionButton.extended(
                 onPressed: rsvpState.isLoading
