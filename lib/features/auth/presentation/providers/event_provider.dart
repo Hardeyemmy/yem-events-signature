@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/repositories/event_repository.dart';
 import '../../../events/domains/models/events.dart';
+import '../../../events/domains/models/atendee.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 
 final eventsStreamProvider = StreamProvider<List<Event>>((ref) {
@@ -64,6 +65,13 @@ final attendeeCountProvider = StreamProvider.family<int, String>((
   eventId,
 ) {
   return ref.watch(eventRepositoryProvider).attendeesCount(eventId);
+});
+
+final attendeesProvider = StreamProvider.family<List<Attendee>, String>((
+  ref,
+  eventId,
+) {
+  return ref.watch(eventRepositoryProvider).watchAttendees(eventId);
 });
 
 final rsvpControllerProvider =

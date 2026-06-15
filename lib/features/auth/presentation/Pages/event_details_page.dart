@@ -100,6 +100,77 @@ class EventDetailPage extends ConsumerWidget {
                           context,
                         ).textTheme.bodyLarge?.copyWith(height: 1.5),
                       ),
+                      const SizedBox(height: 32),
+                      const Divider(),
+                      const SizedBox(height: 24),
+
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Attendees',
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          attendeeCountAsync.when(
+                            data: (count) => Chip(
+                              label: Text('$count going'),
+                              avatar: const Icon(Icons.people, size: 20),
+                            ),
+                            error: (_, __) => const SizedBox.shrink(),
+                            loading: () => const SizedBox.shrink(),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Consumer(
+                        builder: (context, ref, _) {
+                          final attendeesAsync = ref.watch(
+                            attendeesProvider(eventId),
+                          );
+                          return attendeesAsync.when(
+                            data: (attendees) {
+                              if (attendees.isEmpty) {
+                                return Text(
+                                  'Be the first to RSVP!',
+                                  style: TextStyle(color: Colors.grey[600]),
+                                );
+                              }
+                              return ListView.separated(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemBuilder: (context, index) {
+                                  final attendee = attendees[index];
+                                  return ListTile(
+                                    leading: CircleAvatar(
+                                      child: Text(
+                                        attendee.userEmail
+                                            .substring(0, 1)
+                                            .toUpperCase(),
+                                      ),
+                                    ),
+                                    title: Text(attendee.userEmail),
+                                    subtitle: Text(
+                                      'Joined ${DateFormat('MMM d').format(attendee.joinedAt)}',
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodySmall,
+                                    ),
+                                  );
+                                },
+                                separatorBuilder: (_, __) =>
+                                    const Divider(height: 1),
+                                itemCount: attendees.length,
+                              );
+                            },
+                            error: (err, _) => Text('Error: $err'),
+                            loading: () => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                          );
+                        },
+                      ),
+                      // Here you could add a list of attendees using watchAttendees stream
                       const SizedBox(height: 100),
                     ],
                   ),

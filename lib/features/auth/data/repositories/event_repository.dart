@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../events/domains/models/events.dart';
+import '../../../events/domains/models/atendee.dart';
 
 final eventRepositoryProvider = Provider<EventRepository>((ref) {
   return EventRepository(FirebaseFirestore.instance);
@@ -55,5 +56,14 @@ class EventRepository {
         .collection('attendees')
         .snapshots()
         .map((snapshot) => snapshot.docs.length);
+  }
+
+  Stream<List<Attendee>> watchAttendees(String eventId) {
+    return _eventRef
+        .doc(eventId)
+        .collection('attendees')
+        .orderBy('joinedAt')
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map(Attendee.fromFirestore).toList());
   }
 }

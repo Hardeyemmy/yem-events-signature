@@ -9,6 +9,7 @@ class Event {
   final String creatorId;
   final String creatorEmail;
   final DateTime createdAt;
+  final String? imageUrl;
 
   Event({
     required this.id,
@@ -19,6 +20,7 @@ class Event {
     required this.creatorId,
     required this.creatorEmail,
     required this.createdAt,
+    this.imageUrl,
   });
 
   factory Event.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -32,6 +34,7 @@ class Event {
       creatorId: data['creatorId'] ?? '',
       creatorEmail: data['creatorEmail'] ?? '',
       createdAt: (data['createdAt'] as Timestamp).toDate(),
+      imageUrl: data['imageUrl'],
     );
   }
 
@@ -44,6 +47,7 @@ class Event {
       'creatorId': creatorId,
       'creatorEmail': creatorEmail,
       'createdAt': Timestamp.fromDate(createdAt),
+      'imageUrl': imageUrl,
     };
   }
 }
