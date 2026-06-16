@@ -1,7 +1,12 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import '../../presentation/providers/event_provider.dart';
+import 'package:image_picker/image_picker.dart';
+import '../providers/event_provider.dart';
 
 class CreateEventPage extends ConsumerStatefulWidget {
   const CreateEventPage({super.key});
@@ -16,6 +21,10 @@ class _CreateEventPageState extends ConsumerState<CreateEventPage> {
   final _descController = TextEditingController();
   final _locationController = TextEditingController();
   DateTime? _selectedDate;
+  File? _selectedImage;
+  Uint8List? _selectedImageBytes; // <-- Your code
+  final _picker = ImagePicker(); // <-- Your code
+  static const String _imgbbApiKey = 'e65dda1999c0ee67415a324643ded9a6';
 
   @override
   void dispose() {
@@ -39,7 +48,6 @@ class _CreateEventPageState extends ConsumerState<CreateEventPage> {
       context: context,
       initialTime: TimeOfDay.now(),
     );
-
     if (time == null) return;
 
     setState(() {
@@ -53,14 +61,82 @@ class _CreateEventPageState extends ConsumerState<CreateEventPage> {
     });
   }
 
+  // <-- Your code
+  Future<void> _pickImage() async {
+    final picked = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
+      maxWidth: 1024,
+    );
+    if (picked == null) return;
+    if (kIsWeb) {
+      // Web: read bytes
+      final bytes = await picked.readAsBytes();
+      setState(() {
+        _selectedImageBytes = bytes;
+        _selectedImage = null;
+      });
+    } else {
+      // Mobile: use File
+      setState(() {
+        _selectedImage = File(picked.path);
+        _selectedImageBytes = null;
+      });
+    }
+  }
+
+  // <-- Your code
+  Future<String?> _uploadImage() async {
+    Uint8List? imageBytes;
+    if (kIsWeb) {
+      imageBytes = _selectedImageBytes;
+    } else {
+      if (_selectedImage != null) {
+        imageBytes = await _selectedImage!.readAsBytes();
+      }
+    }
+    if (imageBytes == null) return null;
+    try {
+      final base64Image = base64Encode(imageBytes);
+      final response = await http.post(
+        Uri.parse('https://api.imgbb.com/1/upload?key=$_imgbbApiKey'),
+        body: {'image': base64Image},
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data']['url'];
+      } else {
+        throw Exception('Upload failed: ${response.body}');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Image upload failed: $e')));
+      }
+      return null;
+    }
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedDate == null) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Pick a date!')));
+      ).showSnackBar(const SnackBar(content: Text('Please pick a date')));
       return;
     }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    final imageUrl = await _uploadImage(); // <-- Your code
+
+    if (mounted) Navigator.pop(context);
     await ref
         .read(createEventControllerProvider.notifier)
         .createEvent(
@@ -68,6 +144,7 @@ class _CreateEventPageState extends ConsumerState<CreateEventPage> {
           description: _descController.text.trim(),
           location: _locationController.text.trim(),
           date: _selectedDate!,
+          imageUrl: imageUrl, // <-- Your code
         );
   }
 
@@ -76,25 +153,22 @@ class _CreateEventPageState extends ConsumerState<CreateEventPage> {
     ref.listen(createEventControllerProvider, (prev, next) {
       next.whenOrNull(
         data: (_) {
-          if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Event created successfully!')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Event created!')));
           _formKey.currentState!.reset();
           _titleController.clear();
           _descController.clear();
           _locationController.clear();
           setState(() {
             _selectedDate = null;
+            _selectedImage = null; // <-- Clear image too
+            _selectedImageBytes = null;
           });
-          // Event created successfully; reset form.
         },
-        error: (err, _) {
-          if (!mounted) return;
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(err.toString())));
-        },
+        error: (err, _) => ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(err.toString()))),
       );
     });
 
@@ -139,6 +213,22 @@ class _CreateEventPageState extends ConsumerState<CreateEventPage> {
                 trailing: const Icon(Icons.calendar_month),
                 onTap: _pickDate,
               ),
+
+              // <-- Your image picker widget
+              const SizedBox(height: 16),
+              GestureDetector(
+                onTap: _pickImage,
+                child: Container(
+                  height: 180,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: _buildImagePreview(),
+                ),
+              ),
+
               const SizedBox(height: 24),
               createState.isLoading
                   ? const CircularProgressIndicator()
@@ -151,5 +241,28 @@ class _CreateEventPageState extends ConsumerState<CreateEventPage> {
         ),
       ),
     );
+  }
+
+  Widget _buildImagePreview() {
+    if (kIsWeb && _selectedImageBytes != null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Image.memory(_selectedImageBytes!, fit: BoxFit.cover),
+      );
+    } else if (!kIsWeb && _selectedImage != null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Image.file(_selectedImage!, fit: BoxFit.cover),
+      );
+    } else {
+      return const Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.add_photo_alternate, size: 50, color: Colors.grey),
+          SizedBox(height: 8),
+          Text('Add Event Image'),
+        ],
+      );
+    }
   }
 }

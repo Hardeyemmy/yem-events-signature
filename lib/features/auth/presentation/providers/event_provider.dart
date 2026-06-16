@@ -22,6 +22,7 @@ class CreateEventController extends AsyncNotifier<void> {
     required String description,
     required String location,
     required DateTime date,
+    String? imageUrl,
   }) async {
     state = const AsyncValue<void>.loading();
     final user = ref.read(currentUserProvider);
@@ -39,6 +40,7 @@ class CreateEventController extends AsyncNotifier<void> {
       creatorId: user.uid,
       creatorEmail: user.email ?? '',
       createdAt: DateTime.now(),
+      imageUrl: imageUrl,
     );
 
     state = await AsyncValue.guard(

@@ -25,26 +25,80 @@ class EventDetailPage extends ConsumerWidget {
           return CustomScrollView(
             slivers: [
               SliverAppBar(
-                expandedHeight: 200,
+                expandedHeight: 220,
                 pinned: true,
                 flexibleSpace: FlexibleSpaceBar(
                   title: Text(event.title),
-                  background: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [Colors.deepPurple, Colors.purple.shade300],
-                      ),
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.event,
-                        size: 100,
-                        color: Colors.white54,
-                      ),
-                    ),
-                  ),
+                  background:
+                      event.imageUrl != null && event.imageUrl!.isNotEmpty
+                      ? Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            Image.network(
+                              event.imageUrl!,
+                              fit: BoxFit.cover,
+                              loadingBuilder:
+                                  (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return const Center(
+                                      child: CircularProgressIndicator(),
+                                    );
+                                  },
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        Colors.deepPurple,
+                                        Colors.purple.shade300,
+                                      ],
+                                    ),
+                                  ),
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.event,
+                                      size: 100,
+                                      color: Colors.white54,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.black.withAlpha(77),
+                                    Colors.transparent,
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      : Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.deepPurple,
+                                Colors.purple.shade300,
+                              ],
+                            ),
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.event,
+                              size: 100,
+                              color: Colors.white54,
+                            ),
+                          ),
+                        ),
                 ),
               ),
               SliverToBoxAdapter(
@@ -59,32 +113,63 @@ class EventDetailPage extends ConsumerWidget {
                         subtitle: timeFormat.format(event.date),
                       ),
                       const SizedBox(height: 16),
-
                       _InfoRow(
                         icon: Icons.location_on,
                         title: 'Location',
                         subtitle: event.location,
                       ),
                       const SizedBox(height: 16),
-
                       _InfoRow(
                         icon: Icons.person,
                         title: 'Hosted by',
                         subtitle: event.creatorEmail,
                       ),
                       const SizedBox(height: 16),
-
+                      if (event.imageUrl != null &&
+                          event.imageUrl!.isNotEmpty) ...[
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            event.imageUrl!,
+                            width: double.infinity,
+                            height: 200,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return const SizedBox(
+                                height: 200,
+                                child: Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                height: 200,
+                                color: Colors.grey.shade200,
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.broken_image,
+                                    size: 48,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
                       attendeeCountAsync.when(
                         data: (attendanceCount) => _InfoRow(
                           icon: Icons.people,
                           title: '$attendanceCount attending',
                           subtitle: 'Tap RSVP to join',
                         ),
-                        error: (_, __) => const SizedBox.shrink(),
+                        error: (error, _) => const SizedBox.shrink(),
                         loading: () => const SizedBox.shrink(),
                       ),
                       const SizedBox(height: 16),
-
                       const Divider(),
                       const SizedBox(height: 24),
                       Text(
@@ -103,7 +188,6 @@ class EventDetailPage extends ConsumerWidget {
                       const SizedBox(height: 32),
                       const Divider(),
                       const SizedBox(height: 24),
-
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -117,7 +201,7 @@ class EventDetailPage extends ConsumerWidget {
                               label: Text('$count going'),
                               avatar: const Icon(Icons.people, size: 20),
                             ),
-                            error: (_, __) => const SizedBox.shrink(),
+                            error: (error, _) => const SizedBox.shrink(),
                             loading: () => const SizedBox.shrink(),
                           ),
                         ],
@@ -158,7 +242,7 @@ class EventDetailPage extends ConsumerWidget {
                                     ),
                                   );
                                 },
-                                separatorBuilder: (_, __) =>
+                                separatorBuilder: (context, _) =>
                                     const Divider(height: 1),
                                 itemCount: attendees.length,
                               );
@@ -170,7 +254,6 @@ class EventDetailPage extends ConsumerWidget {
                           );
                         },
                       ),
-                      // Here you could add a list of attendees using watchAttendees stream
                       const SizedBox(height: 100),
                     ],
                   ),
@@ -216,7 +299,7 @@ class EventDetailPage extends ConsumerWidget {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ),
               ),
-              error: (_, __) => const SizedBox.shrink(),
+              error: (error, _) => const SizedBox.shrink(),
             )
           : null,
     );
