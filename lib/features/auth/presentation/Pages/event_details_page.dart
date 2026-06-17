@@ -28,7 +28,25 @@ class EventDetailPage extends ConsumerWidget {
                 expandedHeight: 220,
                 pinned: true,
                 flexibleSpace: FlexibleSpaceBar(
-                  title: Text(event.title),
+                  titlePadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  title: Text(
+                    event.title,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      shadows: [
+                        Shadow(
+                          offset: Offset(0, 1),
+                          blurRadius: 3,
+                          color: Colors.black54,
+                        ),
+                      ],
+                    ),
+                  ),
                   background:
                       event.imageUrl != null && event.imageUrl!.isNotEmpty
                       ? Stack(
@@ -37,34 +55,19 @@ class EventDetailPage extends ConsumerWidget {
                             Image.network(
                               event.imageUrl!,
                               fit: BoxFit.cover,
-                              loadingBuilder:
-                                  (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return const Center(
-                                      child: CircularProgressIndicator(),
-                                    );
-                                  },
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [
-                                        Colors.deepPurple,
-                                        Colors.purple.shade300,
-                                      ],
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                        colors: [
+                                          Colors.deepPurple,
+                                          Colors.purple.shade300,
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                  child: const Center(
-                                    child: Icon(
-                                      Icons.event,
-                                      size: 100,
-                                      color: Colors.white54,
-                                    ),
-                                  ),
-                                );
-                              },
                             ),
                             Container(
                               decoration: BoxDecoration(
@@ -89,13 +92,6 @@ class EventDetailPage extends ConsumerWidget {
                                 Colors.deepPurple,
                                 Colors.purple.shade300,
                               ],
-                            ),
-                          ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.event,
-                              size: 100,
-                              color: Colors.white54,
                             ),
                           ),
                         ),
@@ -124,42 +120,8 @@ class EventDetailPage extends ConsumerWidget {
                         title: 'Hosted by',
                         subtitle: event.creatorEmail,
                       ),
+
                       const SizedBox(height: 16),
-                      if (event.imageUrl != null &&
-                          event.imageUrl!.isNotEmpty) ...[
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.network(
-                            event.imageUrl!,
-                            width: double.infinity,
-                            height: 200,
-                            fit: BoxFit.cover,
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return const SizedBox(
-                                height: 200,
-                                child: Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                              );
-                            },
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                height: 200,
-                                color: Colors.grey.shade200,
-                                child: const Center(
-                                  child: Icon(
-                                    Icons.broken_image,
-                                    size: 48,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                      ],
                       attendeeCountAsync.when(
                         data: (attendanceCount) => _InfoRow(
                           icon: Icons.people,
@@ -228,9 +190,11 @@ class EventDetailPage extends ConsumerWidget {
                                   return ListTile(
                                     leading: CircleAvatar(
                                       child: Text(
-                                        attendee.userEmail
-                                            .substring(0, 1)
-                                            .toUpperCase(),
+                                        attendee.userEmail.isNotEmpty
+                                            ? attendee.userEmail
+                                                  .substring(0, 1)
+                                                  .toUpperCase()
+                                            : '?',
                                       ),
                                     ),
                                     title: Text(attendee.userEmail),
