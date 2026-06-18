@@ -38,10 +38,44 @@ class EventRepository {
         .map((snapshot) => snapshot.exists);
   }
 
-  Future<void> rsvpToEvent(String eventId, String userId, String email) {
+  Future<void> toggleRsvp(
+    String eventId,
+    String userId,
+    String email,
+    String? displayName, // <-- Add this param
+  ) async {
+    final attendeeRef = _eventRef
+        .doc(eventId)
+        .collection('attendees')
+        .doc(userId);
+    final attendeeDoc = await attendeeRef.get();
+
+    if (attendeeDoc.exists) {
+      await attendeeRef.delete();
+    } else {
+      await attendeeRef.set({
+        'userEmail': email,
+        'displayName': displayName?.isNotEmpty == true
+            ? displayName
+            : email.split('@')[0],
+        'joinedAt': FieldValue.serverTimestamp(),
+      });
+    }
+  }
+
+  // Also update rsvpToEvent to match
+  Future<void> rsvpToEvent(
+    String eventId,
+    String userId,
+    String email,
+    String? displayName,
+  ) {
     return _eventRef.doc(eventId).collection('attendees').doc(userId).set({
       'userId': userId,
-      'email': email,
+      'userEmail': email,
+      'displayName': displayName?.isNotEmpty == true
+          ? displayName
+          : email.split('@')[0],
       'joinedAt': FieldValue.serverTimestamp(),
     });
   }

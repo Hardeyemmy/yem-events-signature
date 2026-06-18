@@ -8,6 +8,7 @@ class Event {
   final DateTime date;
   final String creatorId;
   final String creatorEmail;
+  final String creatorName;
   final DateTime createdAt;
   final String? imageUrl;
 
@@ -19,6 +20,7 @@ class Event {
     required this.date,
     required this.creatorId,
     required this.creatorEmail,
+    required this.creatorName,
     required this.createdAt,
     this.imageUrl,
   });
@@ -33,6 +35,7 @@ class Event {
       date: (data['date'] as Timestamp).toDate(),
       creatorId: data['creatorId'] ?? '',
       creatorEmail: data['creatorEmail'] ?? '',
+      creatorName: data['creatorName'] ?? data['creatorEmail'] ?? 'Anonymous',
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       imageUrl: data['imageUrl'],
     );
@@ -46,6 +49,7 @@ class Event {
       'date': Timestamp.fromDate(date),
       'creatorId': creatorId,
       'creatorEmail': creatorEmail,
+      'creatorName': creatorName,
       'createdAt': Timestamp.fromDate(createdAt),
       'imageUrl': imageUrl,
     };

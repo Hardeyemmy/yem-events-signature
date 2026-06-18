@@ -1,9 +1,14 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../data/repositories/event_repository.dart';
 import '../../../events/domains/models/events.dart';
 import '../../../events/domains/models/atendee.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+
+final eventRepositoryProvider = Provider<EventRepository>((ref) {
+  return EventRepository(FirebaseFirestore.instance);
+});
 
 final eventsStreamProvider = StreamProvider<List<Event>>((ref) {
   return ref.watch(eventRepositoryProvider).watchAllEvents();
@@ -39,6 +44,10 @@ class CreateEventController extends AsyncNotifier<void> {
       date: date,
       creatorId: user.uid,
       creatorEmail: user.email ?? '',
+      creatorName:
+          user.displayName ??
+          user.email?.split('@')[0] ??
+          'Anonymous', // <-- Add this
       createdAt: DateTime.now(),
       imageUrl: imageUrl,
     );
@@ -57,8 +66,10 @@ final eventDetailsProvider = StreamProvider.family<Event, String>((
 });
 
 final isAttendingProvider = StreamProvider.family<bool, String>((ref, eventId) {
-  final user = ref.read(currentUserProvider);
-  if (user == null) return const Stream.empty();
+  final user = ref.watch(
+    currentUserProvider,
+  ); // use watch so it rebuilds on login/logout
+  if (user == null) return Stream.value(false);
   return ref.watch(eventRepositoryProvider).isAttending(eventId, user.uid);
 });
 
@@ -97,7 +108,13 @@ class RsvpController extends AsyncNotifier<void> {
       if (isCurrentlyAttending) {
         await repo.cancelRsvp(eventId, user.uid);
       } else {
-        await repo.rsvpToEvent(eventId, user.uid, user.email ?? '');
+        // Pass displayName here
+        await repo.rsvpToEvent(
+          eventId,
+          user.uid,
+          user.email ?? 'Unknown',
+          user.displayName, // <-- Add this
+        ); // Fixed missing semicolon
       }
     });
   }

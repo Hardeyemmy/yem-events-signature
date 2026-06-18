@@ -118,7 +118,7 @@ class EventDetailPage extends ConsumerWidget {
                       _InfoRow(
                         icon: Icons.person,
                         title: 'Hosted by',
-                        subtitle: event.creatorEmail,
+                        subtitle: event.creatorName,
                       ),
 
                       const SizedBox(height: 16),
@@ -190,14 +190,23 @@ class EventDetailPage extends ConsumerWidget {
                                   return ListTile(
                                     leading: CircleAvatar(
                                       child: Text(
-                                        attendee.userEmail.isNotEmpty
-                                            ? attendee.userEmail
+                                        attendee.displayName.isNotEmpty
+                                            ? attendee.displayName
                                                   .substring(0, 1)
                                                   .toUpperCase()
                                             : '?',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.deepPurple,
+                                        ),
                                       ),
                                     ),
-                                    title: Text(attendee.userEmail),
+                                    title: Text(
+                                      attendee.displayName,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
                                     subtitle: Text(
                                       'Joined ${DateFormat('MMM d').format(attendee.joinedAt)}',
                                       style: Theme.of(
