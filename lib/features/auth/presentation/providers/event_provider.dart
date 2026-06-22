@@ -44,10 +44,7 @@ class CreateEventController extends AsyncNotifier<void> {
       date: date,
       creatorId: user.uid,
       creatorEmail: user.email ?? '',
-      creatorName:
-          user.displayName ??
-          user.email?.split('@')[0] ??
-          'Anonymous', // <-- Add this
+      creatorName: user.displayName ?? user.email?.split('@')[0] ?? 'Anonymous',
       createdAt: DateTime.now(),
       imageUrl: imageUrl,
     );
@@ -66,9 +63,7 @@ final eventDetailsProvider = StreamProvider.family<Event, String>((
 });
 
 final isAttendingProvider = StreamProvider.family<bool, String>((ref, eventId) {
-  final user = ref.watch(
-    currentUserProvider,
-  ); // use watch so it rebuilds on login/logout
+  final user = ref.watch(currentUserProvider);
   if (user == null) return Stream.value(false);
   return ref.watch(eventRepositoryProvider).isAttending(eventId, user.uid);
 });
@@ -108,14 +103,97 @@ class RsvpController extends AsyncNotifier<void> {
       if (isCurrentlyAttending) {
         await repo.cancelRsvp(eventId, user.uid);
       } else {
-        // Pass displayName here
         await repo.rsvpToEvent(
           eventId,
           user.uid,
           user.email ?? 'Unknown',
-          user.displayName, // <-- Add this
-        ); // Fixed missing semicolon
+          user.displayName,
+        );
       }
     });
+  }
+}
+
+final editEventControllerProvider = AsyncNotifierProvider.autoDispose
+    .family<EditEventController, void, String>(EditEventController.new);
+
+class EditEventController extends AutoDisposeFamilyAsyncNotifier<void, String> {
+  @override
+  FutureOr<void> build(String eventId) {
+    // eventId is available as `arg` or the parameter here
+    return null;
+  }
+
+  String get eventId => arg; // Get the family parameter
+
+  Future<void> updateEvent({
+    required String title,
+    required String description,
+    required String location,
+    required DateTime date,
+    String? imageUrl,
+  }) async {
+    state = const AsyncValue<void>.loading();
+
+    final user = ref.read(currentUserProvider);
+    if (user == null) {
+      state = AsyncError('Not logged in', StackTrace.current);
+      return;
+    }
+
+    final existingEvent = await ref.read(eventDetailsProvider(eventId).future);
+
+    if (existingEvent.creatorId != user.uid) {
+      state = AsyncError(
+        'Only the event creator can edit this event',
+        StackTrace.current,
+      );
+      return;
+    }
+
+    final updatedEvent = Event(
+      id: eventId,
+      title: title,
+      description: description,
+      location: location,
+      date: date,
+      creatorId: existingEvent.creatorId,
+      creatorEmail: existingEvent.creatorEmail,
+      creatorName: existingEvent.creatorName,
+      createdAt: existingEvent.createdAt,
+      imageUrl: imageUrl == null
+          ? existingEvent.imageUrl
+          : imageUrl.isEmpty
+          ? null
+          : imageUrl,
+    );
+
+    state = await AsyncValue.guard(
+      () =>
+          ref.read(eventRepositoryProvider).updateEvent(eventId, updatedEvent),
+    );
+  }
+
+  Future<void> deleteEvent() async {
+    state = const AsyncValue<void>.loading();
+
+    final user = ref.read(currentUserProvider);
+    if (user == null) {
+      state = AsyncError('Not logged in', StackTrace.current);
+      return;
+    }
+
+    final existingEvent = await ref.read(eventDetailsProvider(eventId).future);
+    if (existingEvent.creatorId != user.uid) {
+      state = AsyncError(
+        'Only the event creator can delete this event',
+        StackTrace.current,
+      );
+      return;
+    }
+
+    state = await AsyncValue.guard(
+      () => ref.read(eventRepositoryProvider).deleteEvent(eventId),
+    );
   }
 }
