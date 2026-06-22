@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ffi';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../data/repositories/event_repository.dart';
@@ -114,17 +115,16 @@ class RsvpController extends AsyncNotifier<void> {
   }
 }
 
-final editEventControllerProvider = AsyncNotifierProvider.autoDispose
-    .family<EditEventController, void, String>(EditEventController.new);
+final editEventControllerProvider =
+    AsyncNotifierProvider.autoDispose<EditEventController, void>(
+      EditEventController.new,
+    );
 
-class EditEventController extends AutoDisposeFamilyAsyncNotifier<void, String> {
+class EditEventController extends AsyncNotifier<void> {
+  late final String eventId;
+
   @override
-  FutureOr<void> build(String eventId) {
-    // eventId is available as `arg` or the parameter here
-    return null;
-  }
-
-  String get eventId => arg; // Get the family parameter
+  FutureOr<void> build() async {}
 
   Future<void> updateEvent({
     required String title,
