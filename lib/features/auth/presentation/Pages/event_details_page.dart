@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import '../Pages/edit_event_page.dart';
 import '../providers/event_provider.dart';
 import '../providers/auth_providers.dart';
 
@@ -27,6 +28,24 @@ class EventDetailPage extends ConsumerWidget {
               SliverAppBar(
                 expandedHeight: 220,
                 pinned: true,
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.deepPurple,
+                actions: [
+                  if (currentUser != null && event.creatorId == currentUser.uid)
+                    IconButton(
+                      icon: const Icon(Icons.edit),
+                      color: Colors.white,
+                      tooltip: 'Edit Event',
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => EditEventPage(eventId: eventId),
+                          ),
+                        );
+                      },
+                    ),
+                ],
                 flexibleSpace: FlexibleSpaceBar(
                   titlePadding: const EdgeInsets.symmetric(
                     horizontal: 16,

@@ -1,6 +1,11 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../events/domains/models/events.dart';
 import '../providers/event_provider.dart';
 
@@ -18,8 +23,24 @@ class _EditEventPageState extends ConsumerState<EditEventPage> {
   final _descController = TextEditingController();
   final _locationController = TextEditingController();
   DateTime? _selectedDate;
-  String? _imageUrl;
+
+  // Existing remote image from Firestore
+  String? _existingImageUrl;
+
+  // Newly picked image (mobile)
+  File? _newImageFile;
+
+  // Newly picked image (web)
+  Uint8List? _newImageBytes;
+
+  // Tracks if user explicitly removed the image
+  bool _imageRemoved = false;
+
   bool _initialized = false;
+  bool _uploadingImage = false;
+
+  final _picker = ImagePicker();
+  static const String _imgbbApiKey = 'e65dda1999c0ee67415a324643ded9a6';
 
   @override
   void dispose() {
@@ -35,8 +56,77 @@ class _EditEventPageState extends ConsumerState<EditEventPage> {
     _descController.text = event.description;
     _locationController.text = event.location;
     _selectedDate = event.date;
-    _imageUrl = event.imageUrl;
+    _existingImageUrl = event.imageUrl;
     _initialized = true;
+  }
+
+  Future<void> _pickImage() async {
+    final picked = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
+      maxWidth: 1024,
+    );
+    if (picked == null) return;
+
+    if (kIsWeb) {
+      final bytes = await picked.readAsBytes();
+      setState(() {
+        _newImageBytes = bytes;
+        _newImageFile = null;
+        _imageRemoved = false;
+      });
+    } else {
+      setState(() {
+        _newImageFile = File(picked.path);
+        _newImageBytes = null;
+        _imageRemoved = false;
+      });
+    }
+  }
+
+  void _removeImage() {
+    setState(() {
+      _newImageFile = null;
+      _newImageBytes = null;
+      _imageRemoved = true;
+    });
+  }
+
+  /// Same upload logic as CreateEventPage — ImgBB via base64
+  Future<String?> _uploadImage() async {
+    Uint8List? imageBytes;
+
+    if (kIsWeb) {
+      imageBytes = _newImageBytes;
+    } else {
+      if (_newImageFile != null) {
+        imageBytes = await _newImageFile!.readAsBytes();
+      }
+    }
+
+    if (imageBytes == null) return null;
+
+    try {
+      final base64Image = base64Encode(imageBytes);
+      final response = await http.post(
+        Uri.parse('https://api.imgbb.com/1/upload?key=$_imgbbApiKey'),
+        body: {'image': base64Image},
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data']['url'];
+      } else {
+        throw Exception('Upload failed: ${response.body}');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Image upload failed: $e')));
+      }
+      return null;
+    }
   }
 
   Future<void> _pickDate() async {
@@ -76,6 +166,23 @@ class _EditEventPageState extends ConsumerState<EditEventPage> {
       return;
     }
 
+    String? finalImageUrl = _existingImageUrl;
+
+    // User picked a new image — upload it
+    final hasNewImage = _newImageFile != null || _newImageBytes != null;
+    if (hasNewImage) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(child: CircularProgressIndicator()),
+      );
+      finalImageUrl = await _uploadImage();
+      if (mounted) Navigator.pop(context); // dismiss upload dialog
+    }
+
+    // User removed the image — set to null
+    if (_imageRemoved) finalImageUrl = null;
+
     await ref
         .read(editEventControllerProvider(widget.eventId).notifier)
         .updateEvent(
@@ -83,7 +190,7 @@ class _EditEventPageState extends ConsumerState<EditEventPage> {
           description: _descController.text.trim(),
           location: _locationController.text.trim(),
           date: _selectedDate!,
-          imageUrl: _imageUrl,
+          imageUrl: finalImageUrl,
         );
 
     final state = ref.read(editEventControllerProvider(widget.eventId));
@@ -130,11 +237,104 @@ class _EditEventPageState extends ConsumerState<EditEventPage> {
         .deleteEvent();
 
     if (!mounted) return;
-    Navigator.pop(context); // Pop edit page
-    Navigator.pop(context); // Pop details page
+    Navigator.pop(context);
+    Navigator.pop(context);
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text('Event deleted')));
+  }
+
+  /// Mirrors _buildImagePreview from CreateEventPage,
+  /// but also shows existing remote image and remove button
+  Widget _buildImageSection() {
+    final hasNewImage = _newImageFile != null || _newImageBytes != null;
+    final hasExistingImage =
+        _existingImageUrl != null &&
+        _existingImageUrl!.isNotEmpty &&
+        !_imageRemoved;
+    final hasAnyImage = hasNewImage || hasExistingImage;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Image preview container — same style as CreateEventPage
+        GestureDetector(
+          onTap: _pickImage,
+          child: Container(
+            height: 180,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: _buildImagePreview(hasNewImage, hasExistingImage),
+          ),
+        ),
+
+        // Remove button — only shown when there's an image
+        if (hasAnyImage) ...[
+          const SizedBox(height: 8),
+          TextButton.icon(
+            onPressed: _removeImage,
+            icon: const Icon(Icons.delete_outline, color: Colors.red),
+            label: const Text(
+              'Remove Image',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildImagePreview(bool hasNewImage, bool hasExistingImage) {
+    // New image picked on web
+    if (kIsWeb && _newImageBytes != null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Image.memory(_newImageBytes!, fit: BoxFit.cover),
+      );
+    }
+
+    // New image picked on mobile
+    if (!kIsWeb && _newImageFile != null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Image.file(_newImageFile!, fit: BoxFit.cover),
+      );
+    }
+
+    // Existing remote image from Firestore
+    if (hasExistingImage) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Image.network(
+          _existingImageUrl!,
+          fit: BoxFit.cover,
+          loadingBuilder: (context, child, progress) => progress == null
+              ? child
+              : const Center(child: CircularProgressIndicator()),
+          errorBuilder: (context, _, __) => const Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.broken_image, size: 50, color: Colors.grey),
+              SizedBox(height: 8),
+              Text('Could not load image'),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // No image — same placeholder as CreateEventPage
+    return const Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Icons.add_photo_alternate, size: 50, color: Colors.grey),
+        SizedBox(height: 8),
+        Text('Tap to add an image'),
+      ],
+    );
   }
 
   @override
@@ -148,6 +348,7 @@ class _EditEventPageState extends ConsumerState<EditEventPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.delete),
+            tooltip: 'Delete Event',
             onPressed: editState.isLoading ? null : _deleteEvent,
           ),
         ],
@@ -160,6 +361,10 @@ class _EditEventPageState extends ConsumerState<EditEventPage> {
             child: ListView(
               padding: const EdgeInsets.all(24),
               children: [
+                // ✅ Image section
+                _buildImageSection(),
+                const SizedBox(height: 16),
+
                 TextFormField(
                   controller: _titleController,
                   decoration: const InputDecoration(

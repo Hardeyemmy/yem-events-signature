@@ -22,6 +22,7 @@ final createEventControllerProvider =
 class CreateEventController extends AsyncNotifier<void> {
   @override
   FutureOr<void> build() async {}
+
   Future<void> createEvent({
     required String title,
     required String description,
@@ -37,7 +38,7 @@ class CreateEventController extends AsyncNotifier<void> {
     }
 
     final event = Event(
-      id: '', // Firestore generates
+      id: '',
       title: title,
       description: description,
       location: location,
@@ -87,7 +88,7 @@ final rsvpControllerProvider =
 
 class RsvpController extends AsyncNotifier<void> {
   @override
-  FutureOr<void> build() {}
+  FutureOr<void> build() async {}
 
   Future<void> toggleRsvp(String eventId) async {
     final user = ref.read(currentUserProvider);
@@ -114,13 +115,12 @@ class RsvpController extends AsyncNotifier<void> {
   }
 }
 
-final editEventControllerProvider =
-    AsyncNotifierProvider.autoDispose<EditEventController, void>(
-      EditEventController.new,
-    );
+final editEventControllerProvider = AsyncNotifierProvider.autoDispose
+    .family<EditEventController, void, String>(EditEventController.new);
 
 class EditEventController extends AsyncNotifier<void> {
-  late final String eventId;
+  EditEventController(this._eventId);
+  final String _eventId;
 
   @override
   FutureOr<void> build() async {}
@@ -140,7 +140,7 @@ class EditEventController extends AsyncNotifier<void> {
       return;
     }
 
-    final existingEvent = await ref.read(eventDetailsProvider(eventId).future);
+    final existingEvent = await ref.read(eventDetailsProvider(_eventId).future);
 
     if (existingEvent.creatorId != user.uid) {
       state = AsyncError(
@@ -151,7 +151,7 @@ class EditEventController extends AsyncNotifier<void> {
     }
 
     final updatedEvent = Event(
-      id: eventId,
+      id: _eventId,
       title: title,
       description: description,
       location: location,
@@ -169,7 +169,7 @@ class EditEventController extends AsyncNotifier<void> {
 
     state = await AsyncValue.guard(
       () =>
-          ref.read(eventRepositoryProvider).updateEvent(eventId, updatedEvent),
+          ref.read(eventRepositoryProvider).updateEvent(_eventId, updatedEvent),
     );
   }
 
@@ -182,7 +182,7 @@ class EditEventController extends AsyncNotifier<void> {
       return;
     }
 
-    final existingEvent = await ref.read(eventDetailsProvider(eventId).future);
+    final existingEvent = await ref.read(eventDetailsProvider(_eventId).future);
     if (existingEvent.creatorId != user.uid) {
       state = AsyncError(
         'Only the event creator can delete this event',
@@ -192,7 +192,7 @@ class EditEventController extends AsyncNotifier<void> {
     }
 
     state = await AsyncValue.guard(
-      () => ref.read(eventRepositoryProvider).deleteEvent(eventId),
+      () => ref.read(eventRepositoryProvider).deleteEvent(_eventId),
     );
   }
 }

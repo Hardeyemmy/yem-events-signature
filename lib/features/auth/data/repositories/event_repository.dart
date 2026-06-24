@@ -1,11 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../events/domains/models/events.dart';
 import '../../../events/domains/models/atendee.dart';
-
-final eventRepositoryProvider = Provider<EventRepository>((ref) {
-  return EventRepository(FirebaseFirestore.instance);
-});
 
 class EventRepository {
   EventRepository(this._firestore);
@@ -99,5 +94,22 @@ class EventRepository {
         .orderBy('joinedAt')
         .snapshots()
         .map((snapshot) => snapshot.docs.map(Attendee.fromFirestore).toList());
+  }
+
+  Future<void> updateEvent(String eventId, Event event) {
+    return _eventRef.doc(eventId).update(event.toFirestore());
+  }
+
+  Future<void> deleteEvent(String eventId) async {
+    final batch = _firestore.batch();
+    final attendees = await _eventRef
+        .doc(eventId)
+        .collection('attendees')
+        .get();
+    for (var doc in attendees.docs) {
+      batch.delete(doc.reference);
+    }
+    batch.delete(_eventRef.doc(eventId));
+    return batch.commit();
   }
 }
