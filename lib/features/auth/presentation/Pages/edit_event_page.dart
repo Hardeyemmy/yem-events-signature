@@ -37,7 +37,6 @@ class _EditEventPageState extends ConsumerState<EditEventPage> {
   bool _imageRemoved = false;
 
   bool _initialized = false;
-  bool _uploadingImage = false;
 
   final _picker = ImagePicker();
   static const String _imgbbApiKey = 'e65dda1999c0ee67415a324643ded9a6';
