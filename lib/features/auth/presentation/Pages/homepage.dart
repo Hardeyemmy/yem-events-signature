@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import '../../presentation/widgets/search_bar.dart';
 import '../../../events/domains/models/events.dart';
 import '../../presentation/providers/event_provider.dart';
 import 'event_details_page.dart';
@@ -10,47 +11,62 @@ class HomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final eventsAsync = ref.watch(eventsStreamProvider);
+    final eventsAsync = ref.watch(filteredEventsProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Upcoming Events')),
-      body: eventsAsync.when(
-        data: (events) {
-          if (events.isEmpty) {
-            return const _EmptyState();
-          }
-          return RefreshIndicator(
-            onRefresh: () async => ref.invalidate(eventsStreamProvider),
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: events.length,
-              itemBuilder: (context, index) {
-                final event = events[index];
-                return _EventCard(event: event);
-              },
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            EventSearchBar(),
+            const SizedBox(height: 20),
+            Expanded(
+              child: eventsAsync.when(
+                data: (events) {
+                  if (events.isEmpty) {
+                    return const _EmptyState();
+                  }
+                  return RefreshIndicator(
+                    onRefresh: () async => ref.invalidate(eventsStreamProvider),
+                    child: ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: events.length,
+                      itemBuilder: (context, index) {
+                        final event = events[index];
+                        return _EventCard(event: event);
+                      },
+                    ),
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (err, stack) => Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.error_outline,
+                        size: 48,
+                        color: Colors.red,
+                      ),
+                      const SizedBox(height: 16),
+                      Text('Failed to load events'),
+                      const SizedBox(height: 8),
+                      Text(
+                        err.toString(),
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: 16),
+                      FilledButton(
+                        onPressed: () => ref.invalidate(eventsStreamProvider),
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.red),
-              const SizedBox(height: 16),
-              Text('Failed to load events'),
-              const SizedBox(height: 8),
-              Text(
-                err.toString(),
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              const SizedBox(height: 16),
-              FilledButton(
-                onPressed: () => ref.invalidate(eventsStreamProvider),
-                child: const Text('Retry'),
-              ),
-            ],
-          ),
+          ],
         ),
       ),
     );

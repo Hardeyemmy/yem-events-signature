@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../data/repositories/event_repository.dart';
 import '../../../events/domains/models/events.dart';
 import '../../../events/domains/models/atendee.dart';
+import '../../../events/domains/models/event_filter.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 
 final eventRepositoryProvider = Provider<EventRepository>((ref) {
@@ -194,5 +195,48 @@ class EditEventController extends AsyncNotifier<void> {
     state = await AsyncValue.guard(
       () => ref.read(eventRepositoryProvider).deleteEvent(_eventId),
     );
+  }
+}
+
+final eventFilterProvider =
+    NotifierProvider.autoDispose<EventFilterController, EventFilter>(
+      EventFilterController.new,
+    );
+
+final filteredEventsProvider = StreamProvider.autoDispose<List<Event>>((ref) {
+  final filter = ref.watch(eventFilterProvider);
+  final repo = ref.watch(eventRepositoryProvider);
+
+  if (filter.isEmpty) {
+    return repo.watchAllEvents();
+  }
+  return repo.watchfilteredEvents(filter);
+});
+
+final eventFilterControllerProvider =
+    NotifierProvider.autoDispose<EventFilterController, EventFilter>(
+      EventFilterController.new,
+    );
+
+class EventFilterController extends Notifier<EventFilter> {
+  @override
+  EventFilter build() => const EventFilter();
+
+  void setKeyword(String? keyword) {
+    state = state.copyWith(keyword: keyword?.isEmpty == true ? null : keyword);
+  }
+
+  void setLocation(String? location) {
+    state = state.copyWith(
+      location: location?.isEmpty == true ? null : location,
+    );
+  }
+
+  void setDateRange(DateTime? start, DateTime? end) {
+    state = state.copyWith(startDate: start, endDate: end);
+  }
+
+  void clearFilters() {
+    state = const EventFilter();
   }
 }

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../events/domains/models/events.dart';
 import '../../../events/domains/models/atendee.dart';
+import '../../../events/domains/models/event_filter.dart';
 
 class EventRepository {
   EventRepository(this._firestore);
@@ -111,5 +112,51 @@ class EventRepository {
     }
     batch.delete(_eventRef.doc(eventId));
     return batch.commit();
+  }
+
+  Stream<List<Event>> watchfilteredEvents(EventFilter filter) {
+    Query<Map<String, dynamic>> query = _firestore.collection('events');
+
+    if (filter.location != null && filter.location!.isNotEmpty) {
+      query = query.where(
+        'location',
+        isGreaterThanOrEqualTo: filter.location,
+        isLessThan: '${filter.location}z',
+      );
+    }
+
+    if (filter.startDate != null) {
+      query = query.where(
+        'date',
+        isGreaterThanOrEqualTo: Timestamp.fromDate(filter.startDate!),
+      );
+    }
+
+    if (filter.endDate != null) {
+      query = query.where(
+        'date',
+        isLessThanOrEqualTo: Timestamp.fromDate(filter.endDate!),
+      );
+    }
+
+    query = query.orderBy('date', descending: false);
+
+    return query.snapshots().map((snapshot) {
+      var events = snapshot.docs
+          .map((doc) => Event.fromFirestore(doc))
+          .toList();
+
+      if (filter.keyword != null && filter.keyword!.isNotEmpty) {
+        final keywordLower = filter.keyword!.toLowerCase();
+        events = events
+            .where(
+              (e) =>
+                  e.title.toLowerCase().contains(keywordLower) ||
+                  e.description.toLowerCase().contains(keywordLower),
+            )
+            .toList();
+      }
+      return events;
+    });
   }
 }
