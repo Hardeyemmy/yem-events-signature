@@ -114,17 +114,11 @@ class EventRepository {
     return batch.commit();
   }
 
-  Stream<List<Event>> watchfilteredEvents(EventFilter filter) {
+  Stream<List<Event>> watchFilteredEvents(EventFilter filter) {
     Query<Map<String, dynamic>> query = _firestore.collection('events');
 
-    if (filter.location != null && filter.location!.isNotEmpty) {
-      query = query.where(
-        'location',
-        isGreaterThanOrEqualTo: filter.location,
-        isLessThan: '${filter.location}z',
-      );
-    }
-
+    // Only apply date filters at Firestore level
+    // (keyword/location filtered client-side for flexibility)
     if (filter.startDate != null) {
       query = query.where(
         'date',
@@ -146,16 +140,19 @@ class EventRepository {
           .map((doc) => Event.fromFirestore(doc))
           .toList();
 
+      // ✅ Keyword searches title, description AND location
       if (filter.keyword != null && filter.keyword!.isNotEmpty) {
         final keywordLower = filter.keyword!.toLowerCase();
         events = events
             .where(
               (e) =>
                   e.title.toLowerCase().contains(keywordLower) ||
-                  e.description.toLowerCase().contains(keywordLower),
+                  e.description.toLowerCase().contains(keywordLower) ||
+                  e.location.toLowerCase().contains(keywordLower),
             )
             .toList();
       }
+
       return events;
     });
   }

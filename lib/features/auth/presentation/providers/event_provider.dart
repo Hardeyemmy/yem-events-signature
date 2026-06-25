@@ -198,23 +198,26 @@ class EditEventController extends AsyncNotifier<void> {
   }
 }
 
-final eventFilterProvider =
-    NotifierProvider.autoDispose<EventFilterController, EventFilter>(
-      EventFilterController.new,
-    );
-
-final filteredEventsProvider = StreamProvider.autoDispose<List<Event>>((ref) {
-  final filter = ref.watch(eventFilterProvider);
+final filteredEventsProvider = StreamProvider<List<Event>>((ref) {
+  final filter = ref.watch(eventFilterControllerProvider);
   final repo = ref.watch(eventRepositoryProvider);
 
+  // 🔍 Debug — check if filter is being received
+  print(
+    '🔍 Filter changed: keyword=${filter.keyword}, location=${filter.location}, isEmpty=${filter.isEmpty}',
+  );
+
   if (filter.isEmpty) {
+    print('🔍 Using watchAllEvents');
     return repo.watchAllEvents();
   }
-  return repo.watchfilteredEvents(filter);
+
+  print('🔍 Using watchFilteredEvents');
+  return repo.watchFilteredEvents(filter);
 });
 
 final eventFilterControllerProvider =
-    NotifierProvider.autoDispose<EventFilterController, EventFilter>(
+    NotifierProvider<EventFilterController, EventFilter>(
       EventFilterController.new,
     );
 
@@ -223,7 +226,9 @@ class EventFilterController extends Notifier<EventFilter> {
   EventFilter build() => const EventFilter();
 
   void setKeyword(String? keyword) {
+    print('🔍 setKeyword called with: $keyword');
     state = state.copyWith(keyword: keyword?.isEmpty == true ? null : keyword);
+    print('🔍 New state keyword: ${state.keyword}');
   }
 
   void setLocation(String? location) {
@@ -236,7 +241,6 @@ class EventFilterController extends Notifier<EventFilter> {
     state = state.copyWith(startDate: start, endDate: end);
   }
 
-  void clearFilters() {
-    state = const EventFilter();
-  }
+  // ✅ Full reset
+  void clearFilters() => state = const EventFilter();
 }
