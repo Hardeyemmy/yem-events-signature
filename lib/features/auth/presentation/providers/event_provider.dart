@@ -100,6 +100,7 @@ class RsvpController extends AsyncNotifier<void> {
     final isCurrentlyAttending = await ref.read(
       isAttendingProvider(eventId).future,
     );
+    final event = await ref.read(eventDetailsProvider(eventId).future);
 
     state = await AsyncValue.guard(() async {
       if (isCurrentlyAttending) {
@@ -111,6 +112,19 @@ class RsvpController extends AsyncNotifier<void> {
           user.email ?? 'Unknown',
           user.displayName,
         );
+        if (event.creatorId != user.uid) {
+          await FirebaseFirestore.instance.collection('notifications').add({
+            'type': 'rsvp',
+            'eventId': eventId,
+            'eventTitle': event.title,
+            'creatorId': event.creatorId,
+            'rsvpUserId': user.uid,
+            'rsvpUserName':
+                user.displayName ?? user.email?.split('@')[0] ?? 'Someone',
+            'createdAt': FieldValue.serverTimestamp(),
+            'sent': false,
+          });
+        }
       }
     });
   }
@@ -203,16 +217,11 @@ final filteredEventsProvider = StreamProvider<List<Event>>((ref) {
   final repo = ref.watch(eventRepositoryProvider);
 
   // 🔍 Debug — check if filter is being received
-  print(
-    '🔍 Filter changed: keyword=${filter.keyword}, location=${filter.location}, isEmpty=${filter.isEmpty}',
-  );
 
   if (filter.isEmpty) {
-    print('🔍 Using watchAllEvents');
     return repo.watchAllEvents();
   }
 
-  print('🔍 Using watchFilteredEvents');
   return repo.watchFilteredEvents(filter);
 });
 
@@ -226,9 +235,7 @@ class EventFilterController extends Notifier<EventFilter> {
   EventFilter build() => const EventFilter();
 
   void setKeyword(String? keyword) {
-    print('🔍 setKeyword called with: $keyword');
     state = state.copyWith(keyword: keyword?.isEmpty == true ? null : keyword);
-    print('🔍 New state keyword: ${state.keyword}');
   }
 
   void setLocation(String? location) {

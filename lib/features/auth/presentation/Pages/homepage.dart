@@ -58,7 +58,7 @@ class HomePage extends ConsumerWidget {
                     child: ListView.separated(
                       padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
                       itemCount: events.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      separatorBuilder: (_, _) => const SizedBox(height: 12),
                       itemBuilder: (context, index) =>
                           _EventCard(event: events[index]),
                     ),
@@ -119,7 +119,7 @@ class _EventCard extends StatelessWidget {
                       height: 140,
                       width: double.infinity,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _ColorBanner(event: event),
+                      errorBuilder: (_, _, _) => _ColorBanner(event: event),
                     )
                   : _ColorBanner(event: event),
             ),

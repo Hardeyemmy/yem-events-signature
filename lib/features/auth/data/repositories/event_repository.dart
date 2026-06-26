@@ -38,7 +38,7 @@ class EventRepository {
     String eventId,
     String userId,
     String email,
-    String? displayName, // <-- Add this param
+    String? displayName,
   ) async {
     final attendeeRef = _eventRef
         .doc(eventId)
@@ -47,15 +47,50 @@ class EventRepository {
     final attendeeDoc = await attendeeRef.get();
 
     if (attendeeDoc.exists) {
+      // ✅ Cancel RSVP — just delete attendee, no notification needed
       await attendeeRef.delete();
     } else {
-      await attendeeRef.set({
+      // ✅ New RSVP — use batch to write attendee + notification atomically
+      final batch = _firestore.batch();
+
+      // Step 1 — Add attendee
+      batch.set(attendeeRef, {
+        'userId': userId,
         'userEmail': email,
         'displayName': displayName?.isNotEmpty == true
             ? displayName
             : email.split('@')[0],
         'joinedAt': FieldValue.serverTimestamp(),
       });
+
+      // Step 2 — Fetch event to get creatorId and title
+      final eventDoc = await _eventRef.doc(eventId).get();
+      final eventData = eventDoc.data();
+
+      if (eventData != null) {
+        final creatorId = eventData['creatorId'] as String?;
+        final eventTitle = eventData['title'] as String?;
+
+        // Step 3 — Write notification only if RSVP user is not the creator
+        if (creatorId != null && creatorId != userId) {
+          final notifRef = _firestore.collection('notifications').doc();
+          batch.set(notifRef, {
+            'type': 'rsvp',
+            'creatorId': creatorId,
+            'eventId': eventId,
+            'eventTitle': eventTitle ?? 'an event',
+            'rsvpUserName': displayName?.isNotEmpty == true
+                ? displayName
+                : email.split('@')[0],
+            'rsvpUserId': userId,
+            'sent': false,
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+        }
+      }
+
+      // Step 4 — Commit both writes atomically
+      await batch.commit();
     }
   }
 
