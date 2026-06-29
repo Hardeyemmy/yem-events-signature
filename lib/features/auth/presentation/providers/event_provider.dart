@@ -6,6 +6,7 @@ import '../../../events/domains/models/events.dart';
 import '../../../events/domains/models/atendee.dart';
 import '../../../events/domains/models/event_filter.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../../core/services/notification_service.dart';
 
 final eventRepositoryProvider = Provider<EventRepository>((ref) {
   return EventRepository(FirebaseFirestore.instance);
@@ -112,19 +113,13 @@ class RsvpController extends AsyncNotifier<void> {
           user.email ?? 'Unknown',
           user.displayName,
         );
-        if (event.creatorId != user.uid) {
-          await FirebaseFirestore.instance.collection('notifications').add({
-            'type': 'rsvp',
-            'eventId': eventId,
-            'eventTitle': event.title,
-            'creatorId': event.creatorId,
-            'rsvpUserId': user.uid,
-            'rsvpUserName':
-                user.displayName ?? user.email?.split('@')[0] ?? 'Someone',
-            'createdAt': FieldValue.serverTimestamp(),
-            'sent': false,
-          });
-        }
+        final event = await ref.read(eventDetailsProvider(eventId).future);
+        await NotificationService().sendRsvpNotification(
+          creatorId: event.creatorId,
+          eventTitle: event.title,
+          rsvpUserName: user.displayName ?? user.email ?? 'Someone',
+          eventId: eventId,
+        );
       }
     });
   }

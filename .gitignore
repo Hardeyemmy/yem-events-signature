@@ -91,5 +91,6 @@ functions/*.log
 # === Misc ===
 .env
 .env.local
+*.env
 .env.*.local
 *.log
