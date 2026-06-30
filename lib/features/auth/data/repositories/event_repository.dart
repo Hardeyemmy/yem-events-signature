@@ -74,18 +74,23 @@ class EventRepository {
         // Step 3 — Write notification only if RSVP user is not the creator
         if (creatorId != null && creatorId != userId) {
           final notifRef = _firestore.collection('notifications').doc();
-          batch.set(notifRef, {
-            'type': 'rsvp',
-            'creatorId': creatorId,
-            'eventId': eventId,
-            'eventTitle': eventTitle ?? 'an event',
-            'rsvpUserName': displayName?.isNotEmpty == true
-                ? displayName
-                : email.split('@')[0],
-            'rsvpUserId': userId,
-            'sent': false,
-            'createdAt': FieldValue.serverTimestamp(),
-          });
+          try {
+            batch.set(notifRef, {
+              'type': 'rsvp',
+              'creatorId': creatorId,
+              'eventId': eventId,
+              'eventTitle': eventTitle ?? 'an event',
+              'rsvpUserName': displayName?.isNotEmpty == true
+                  ? displayName
+                  : email.split('@')[0],
+              'rsvpUserId': userId,
+              'sent': false,
+              'createdAt': FieldValue.serverTimestamp(),
+            });
+          } catch (e) {
+            print('🔴 BATCH WRITE FAILED: $e');
+            print('🔴 Path attempted: notifications/${notifRef.id}');
+          }
         }
       }
 

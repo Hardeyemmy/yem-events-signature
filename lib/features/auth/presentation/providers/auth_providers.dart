@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yem_events_signature/core/services/notification_service.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 
@@ -46,6 +47,7 @@ class AuthController extends AsyncNotifier<void> {
           .read(authRepositoryProvider)
           .signInWithEmail(email: email, password: password),
     );
+    await NotificationService().saveTokenToFirestore();
   }
 
   Future<void> signUp(String email, String password) async {

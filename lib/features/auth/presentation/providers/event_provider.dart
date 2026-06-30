@@ -101,7 +101,6 @@ class RsvpController extends AsyncNotifier<void> {
     final isCurrentlyAttending = await ref.read(
       isAttendingProvider(eventId).future,
     );
-    final event = await ref.read(eventDetailsProvider(eventId).future);
 
     state = await AsyncValue.guard(() async {
       if (isCurrentlyAttending) {

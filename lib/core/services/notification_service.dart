@@ -6,7 +6,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:googleapis_auth/auth_io.dart';
-import 'package:googleapis_auth/googleapis_auth.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -18,28 +17,28 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
 
-  //Load Credentials from .env
+  // Load Credentials from .env
   Map<String, dynamic> get _serviceAccountCredentials => {
-    "type": "service account",
+    "type": "service_account",
     "project_id": dotenv.env["FCM_PROJECT_ID"],
     "private_key": dotenv.env["FCM_PRIVATE_KEY"]?.replaceAll('\\n', '\n'),
     "client_email": dotenv.env['FCM_CLIENT_EMAIL'],
   };
 
-  //Get OAuth2 access token using service account
+  // Get OAuth2 access token using service account
   Future<String?> _getAccessToken() async {
     try {
-      final _accountCredentials = ServiceAccountCredentials.fromJson(
+      final accountCredentials = ServiceAccountCredentials.fromJson(
         _serviceAccountCredentials,
       );
 
       final scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
-      final client = await clientViaServiceAccount(_accountCredentials, scopes);
+      final client = await clientViaServiceAccount(accountCredentials, scopes);
       final token = client.credentials.accessToken.data;
       client.close();
       return token;
     } catch (e) {
-      print('Error getting access token: $e');
+      print('🔴 Error getting access token: $e');
       return null;
     }
   }
@@ -52,7 +51,10 @@ class NotificationService {
   }) async {
     try {
       final accessToken = await _getAccessToken();
-      if (accessToken == null) return;
+      if (accessToken == null) {
+        print('🔴 No access token — cannot send push notification');
+        return;
+      }
       final projectId = dotenv.env['FCM_PROJECT_ID'];
       final url = Uri.parse(
         'https://fcm.googleapis.com/v1/projects/$projectId/messages:send',
@@ -66,10 +68,17 @@ class NotificationService {
         body: jsonEncode({
           'message': {
             'token': fcmToken,
-            'notifications': {'title': title, 'body': body},
-            'data': {'eventId': 'eventId', 'type': 'rsvp'},
+            'notification': {
+              'title': title,
+              'body': body,
+            }, // ✅ FIXED: was 'notifications' (plural)
+            'data': {
+              'eventId': eventId,
+              'type': 'rsvp',
+            }, // ✅ FIXED: was hardcoded string 'eventId'
             'android': {
-              Priority: 'high',
+              'priority':
+                  'high', // ✅ FIXED: was bare identifier `Priority:` — invalid key
               'notification': {
                 'channel_id': 'rsvp_channel',
                 'priority': 'high',
@@ -85,16 +94,16 @@ class NotificationService {
       );
 
       if (response.statusCode == 200) {
-        print('Notification sent Successfully.');
+        print('🟢 Notification sent successfully.');
       } else {
-        print('FCM error: ${response.body}');
+        print('🔴 FCM error: ${response.body}');
       }
     } catch (e) {
-      print('Error sending push Notification: $e');
+      print('🔴 Error sending push notification: $e');
     }
   }
 
-  //Send RSVP notification — call this after a successful RSVP
+  // Send RSVP notification — call this after a successful RSVP
   Future<void> sendRsvpNotification({
     required String creatorId,
     required String eventTitle,
@@ -102,14 +111,20 @@ class NotificationService {
     required String eventId,
   }) async {
     try {
+      print('🔵 Current user: ${FirebaseAuth.instance.currentUser?.uid}');
+      print('🔵 Fetching user doc for creatorId: $creatorId');
+
       final userDoc = await FirebaseFirestore.instance
-          .collection('Users')
+          .collection('users')
           .doc(creatorId)
           .get();
 
+      print('🔵 Fetched user doc: ${userDoc.exists}');
+      print('🔵 User doc data: ${userDoc.data()}');
+
       final fcmToken = userDoc.data()?['fcmToken'] as String?;
       if (fcmToken == null) {
-        print('No FCM token for Creator: $creatorId');
+        print('🔴 No FCM token for Creator: $creatorId');
         return;
       }
       await sendPushNotication(
@@ -118,8 +133,9 @@ class NotificationService {
         body: '$rsvpUserName is attending $eventTitle',
         eventId: eventId,
       );
-    } catch (e) {
-      print('Error sending RSVP Notification: $e');
+    } catch (e, stack) {
+      print('🔴 Error sending RSVP Notification: $e');
+      print('🔴 Stack trace: $stack');
     }
   }
 
@@ -166,7 +182,7 @@ class NotificationService {
       }
     });
 
-    // Save FCM token to Firestore
+    // ✅ FIXED: saveTokenToFirestore() now has debug logging built in
     await saveTokenToFirestore();
 
     // Update token on refresh
@@ -175,14 +191,30 @@ class NotificationService {
 
   Future<void> saveTokenToFirestore() async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    print('🟡 saveTokenToFirestore called for user: ${user?.uid}');
+
+    if (user == null) {
+      print('🔴 No current user — token NOT saved');
+      return;
+    }
 
     final token = await _messaging.getToken();
+    print('🟡 FCM token retrieved: $token');
+
     if (token != null) {
-      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-        'fcmToken': token,
-        'updatedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+      try {
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'fcmToken': token,
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+        print('🟢 Token saved successfully for ${user.uid}');
+      } catch (e) {
+        print('🔴 FAILED to save token: $e');
+      }
+    } else {
+      print(
+        '🔴 Token was null — nothing saved. If on web, check VAPID key setup.',
+      );
     }
   }
 
