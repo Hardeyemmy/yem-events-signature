@@ -16,6 +16,8 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 void main() async {
+  debugPrint('🚀🚀🚀 MAIN STARTED 🚀🚀🚀');
+  print('MAIN STARTED PLAIN PRINT TEST');
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: '.env');
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
