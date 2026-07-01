@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import '../../data/repositories/event_repository.dart';
 import '../../../events/domains/models/events.dart';
 import '../../../events/domains/models/atendee.dart';
 import '../../../events/domains/models/event_filter.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../../core/services/notification_service.dart';
+import '../../../../core/services/email_service.dart';
 
 final eventRepositoryProvider = Provider<EventRepository>((ref) {
   return EventRepository(FirebaseFirestore.instance);
@@ -93,33 +95,54 @@ class RsvpController extends AsyncNotifier<void> {
   FutureOr<void> build() async {}
 
   Future<void> toggleRsvp(String eventId) async {
+    print('🔄 toggleRsvp called for eventId: $eventId');
     final user = ref.read(currentUserProvider);
     if (user == null) return;
 
     state = const AsyncValue<void>.loading();
     final repo = ref.read(eventRepositoryProvider);
-    final isCurrentlyAttending = await ref.read(
-      isAttendingProvider(eventId).future,
-    );
 
     state = await AsyncValue.guard(() async {
-      if (isCurrentlyAttending) {
-        await repo.cancelRsvp(eventId, user.uid);
-      } else {
-        await repo.rsvpToEvent(
-          eventId,
-          user.uid,
-          user.email ?? 'Unknown',
-          user.displayName,
-        );
-        final event = await ref.read(eventDetailsProvider(eventId).future);
-        await NotificationService().sendRsvpNotification(
-          creatorId: event.creatorId,
-          eventTitle: event.title,
-          rsvpUserName: user.displayName ?? user.email ?? 'Someone',
-          eventId: eventId,
-        );
-      }
+      await repo.toggleRsvp(
+        eventId,
+        user.uid,
+        user.email ?? 'Unknown',
+        user.displayName,
+      );
+
+      // ✅ Send emails after successful RSVP
+      final event = await ref.read(eventDetailsProvider(eventId).future);
+      final dateFormat = DateFormat('MMMM d, y - h:mm a');
+
+      // Email to attendee
+      await EmailService().sendRsvpConfirmationEmail(
+        attendeeEmail: user.email ?? '',
+        attendeeName: user.displayName ?? user.email?.split('@')[0] ?? 'there',
+        eventTitle: event.title,
+        eventDate: dateFormat.format(event.date),
+        eventLocation: event.location,
+      );
+
+      // Email to creator
+      final attendeeCount = await ref.read(
+        attendeeCountProvider(eventId).future,
+      );
+      await EmailService().sendCreatorNotificationEmail(
+        creatorEmail: event.creatorEmail,
+        creatorName: event.creatorName,
+        attendeeName:
+            user.displayName ?? user.email?.split('@')[0] ?? 'Someone',
+        eventTitle: event.title,
+        attendeeCount: attendeeCount,
+      );
+
+      // Push notification (existing logic)
+      await NotificationService().sendRsvpNotification(
+        creatorId: event.creatorId,
+        eventTitle: event.title,
+        rsvpUserName: user.displayName ?? user.email ?? 'Someone',
+        eventId: eventId,
+      );
     });
   }
 }

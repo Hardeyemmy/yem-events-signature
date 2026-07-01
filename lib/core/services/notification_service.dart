@@ -23,11 +23,20 @@ class NotificationService {
     "project_id": dotenv.env["FCM_PROJECT_ID"],
     "private_key": dotenv.env["FCM_PRIVATE_KEY"]?.replaceAll('\\n', '\n'),
     "client_email": dotenv.env['FCM_CLIENT_EMAIL'],
+    "client_id": dotenv.env['FCM_CLIENT_ID'],
   };
 
   // Get OAuth2 access token using service account
   Future<String?> _getAccessToken() async {
     try {
+      print('🔑 project_id: ${dotenv.env["FCM_PROJECT_ID"]}');
+      print('🔑 client_email: ${dotenv.env["FCM_CLIENT_EMAIL"]}');
+      print('🔑 client_id: ${dotenv.env["FCM_CLIENT_ID"]}');
+      print('🔑 private_key exists: ${dotenv.env["FCM_PRIVATE_KEY"] != null}');
+      print(
+        '🔑 private_key starts with: ${dotenv.env["FCM_PRIVATE_KEY"]?.substring(0, 30)}',
+      );
+      print('🔑 credentials map: $_serviceAccountCredentials');
       final accountCredentials = ServiceAccountCredentials.fromJson(
         _serviceAccountCredentials,
       );
@@ -68,10 +77,7 @@ class NotificationService {
         body: jsonEncode({
           'message': {
             'token': fcmToken,
-            'notification': {
-              'title': title,
-              'body': body,
-            }, // ✅ FIXED: was 'notifications' (plural)
+            'notification': {'title': title, 'body': body}, //
             'data': {
               'eventId': eventId,
               'type': 'rsvp',
@@ -79,10 +85,7 @@ class NotificationService {
             'android': {
               'priority':
                   'high', // ✅ FIXED: was bare identifier `Priority:` — invalid key
-              'notification': {
-                'channel_id': 'rsvp_channel',
-                'priority': 'high',
-              },
+              'notification': {'channel_id': 'rsvp_channel'},
             },
             'apns': {
               'payload': {

@@ -9,6 +9,7 @@ class EmailService {
     required String eventDate,
     required String eventLocation,
   }) async {
+    print('📧 sendRsvpConfirmationEmail called for: $attendeeEmail');
     try {
       await emailjs.send(
         dotenv.env['EMAILJS_SERVICE_ID']!,
@@ -36,6 +37,7 @@ class EmailService {
     required int attendeeCount,
   }) async {
     try {
+      print('📧 sendCreatorNotificationEmail called for: $creatorEmail');
       await emailjs.send(
         dotenv.env['EMAILJS_SERVICE_ID']!,
         dotenv.env['EMAILJS_TEMPLATE_CREATOR_NOTIFY']!,
