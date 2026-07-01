@@ -87,8 +87,9 @@ final attendeesProvider = StreamProvider.family<List<Attendee>, String>((
   return ref.watch(eventRepositoryProvider).watchAttendees(eventId);
 });
 
-final rsvpControllerProvider =
-    AsyncNotifierProvider.autoDispose<RsvpController, void>(RsvpController.new);
+final rsvpControllerProvider = AsyncNotifierProvider<RsvpController, void>(
+  RsvpController.new,
+);
 
 class RsvpController extends AsyncNotifier<void> {
   @override
