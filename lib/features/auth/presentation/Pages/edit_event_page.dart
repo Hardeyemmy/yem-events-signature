@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../events/domains/models/events.dart';
 import '../providers/event_provider.dart';
+import '../providers/auth_providers.dart';
 
 class EditEventPage extends ConsumerStatefulWidget {
   const EditEventPage({super.key, required this.eventId});

@@ -25,7 +25,11 @@ Stream<User?> authState(Ref ref) {
 
 final currentUserProvider = Provider<User?>((ref) {
   final authState = ref.watch(authStateProvider);
-  return authState.value;
+  return authState.when(
+    data: (user) => user,
+    loading: () => FirebaseAuth.instance.currentUser,
+    error: (_, __) => null,
+  );
 });
 
 final authControllerProvider = AsyncNotifierProvider<AuthController, void>(

@@ -31,20 +31,30 @@ class EventDetailPage extends ConsumerWidget {
                 foregroundColor: Colors.white,
                 backgroundColor: Colors.deepPurple,
                 actions: [
-                  if (currentUser != null && event.creatorId == currentUser.uid)
-                    IconButton(
-                      icon: const Icon(Icons.edit),
-                      color: Colors.white,
-                      tooltip: 'Edit Event',
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => EditEventPage(eventId: eventId),
-                          ),
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final user = ref.watch(currentUserProvider);
+                      print('🔵 currentUser uid: ${user?.uid}');
+                      print('🔵 event.creatorId: ${event.creatorId}');
+                      print('🔵 match: ${user?.uid == event.creatorId}');
+                      if (user != null && event.creatorId == user.uid) {
+                        return IconButton(
+                          icon: const Icon(Icons.edit),
+                          color: Colors.white,
+                          tooltip: 'Edit Event',
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => EditEventPage(eventId: eventId),
+                              ),
+                            );
+                          },
                         );
-                      },
-                    ),
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
                 ],
                 flexibleSpace: FlexibleSpaceBar(
                   titlePadding: const EdgeInsets.symmetric(
