@@ -8,7 +8,6 @@ import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../events/domains/models/events.dart';
 import '../providers/event_provider.dart';
-import '../providers/auth_providers.dart';
 
 class EditEventPage extends ConsumerStatefulWidget {
   const EditEventPage({super.key, required this.eventId});
@@ -314,7 +313,7 @@ class _EditEventPageState extends ConsumerState<EditEventPage> {
           loadingBuilder: (context, child, progress) => progress == null
               ? child
               : const Center(child: CircularProgressIndicator()),
-          errorBuilder: (context, _, __) => const Column(
+          errorBuilder: (context, _, _) => const Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(Icons.broken_image, size: 50, color: Colors.grey),

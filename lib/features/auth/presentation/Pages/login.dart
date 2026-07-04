@@ -93,8 +93,7 @@ class _LoginState extends ConsumerState<Login>
                 message = 'Invalid email or password';
                 break;
               default:
-                message =
-                    (error as FirebaseAuthException).message ?? 'Auth error';
+                message = error.message ?? 'Auth error';
             }
           }
           debugPrint('AUTH ERROR: ${error.toString()}');

@@ -18,6 +18,18 @@ final eventsStreamProvider = StreamProvider<List<Event>>((ref) {
   return ref.watch(eventRepositoryProvider).watchAllEvents();
 });
 
+final mainPageIndexProvider =
+    AsyncNotifierProvider<MainPageIndexController, int>(
+      MainPageIndexController.new,
+    );
+
+class MainPageIndexController extends AsyncNotifier<int> {
+  @override
+  FutureOr<int> build() async => 0;
+
+  void setIndex(int index) => state = AsyncData(index);
+}
+
 final createEventControllerProvider =
     AsyncNotifierProvider.autoDispose<CreateEventController, void>(
       CreateEventController.new,
