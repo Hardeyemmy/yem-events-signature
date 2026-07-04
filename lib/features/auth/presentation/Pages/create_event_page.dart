@@ -165,6 +165,7 @@ class _CreateEventPageState extends ConsumerState<CreateEventPage> {
             _selectedImage = null; // <-- Clear image too
             _selectedImageBytes = null;
           });
+          ref.read(mainPageIndexProvider.notifier).setIndex(0);
         },
         error: (err, _) => ScaffoldMessenger.of(
           context,

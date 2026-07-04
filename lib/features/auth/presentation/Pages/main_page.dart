@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'homepage.dart';
 import 'create_event_page.dart';
 import 'profile_page.dart';
+import '../providers/event_provider.dart';
 
 class MainPage extends ConsumerStatefulWidget {
   const MainPage({super.key});
@@ -14,22 +15,22 @@ class MainPage extends ConsumerStatefulWidget {
 class _MainPageState extends ConsumerState<MainPage> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = [
-    const HomePage(),
-    const CreateEventPage(),
-    const ProfilePage(),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final currentIndexAsync = ref.watch(mainPageIndexProvider);
+    final currentIndex = currentIndexAsync.value ?? _currentIndex;
+    final List<Widget> pages = [
+      const HomePage(),
+      const CreateEventPage(),
+      const ProfilePage(),
+    ];
+
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _pages),
+      body: IndexedStack(index: currentIndex, children: pages),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
+        selectedIndex: currentIndex,
         onDestinationSelected: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
+          ref.read(mainPageIndexProvider.notifier).setIndex(index);
         },
         destinations: const [
           NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
