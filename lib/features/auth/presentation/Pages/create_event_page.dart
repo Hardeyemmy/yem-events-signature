@@ -162,7 +162,7 @@ class _CreateEventPageState extends ConsumerState<CreateEventPage> {
           _locationController.clear();
           setState(() {
             _selectedDate = null;
-            _selectedImage = null; // <-- Clear image too
+            _selectedImage = null;
             _selectedImageBytes = null;
           });
           ref.read(mainPageIndexProvider.notifier).setIndex(0);

@@ -61,11 +61,24 @@ class _LoginState extends ConsumerState<Login>
     final authController = ref.read(authControllerProvider.notifier);
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
+    final displayName = _nameController.text.trim();
 
-    if (_isLogin) {
-      await authController.signIn(email, password);
-    } else {
-      await authController.signUp(email, password);
+    if (!_isLogin) {
+      _InputField(
+        controller: _nameController,
+        label: 'Full Name',
+        icon: Icons.person_outline_rounded,
+
+        validator: (v) {
+          if (v == null || v.trim().isEmpty) {
+            return 'Enter your Name';
+          } else if (v.trim().length < 4) {
+            return 'Name must be at least 4 characters';
+          }
+          return null;
+        },
+      );
+      const SizedBox(height: 16);
     }
   }
 

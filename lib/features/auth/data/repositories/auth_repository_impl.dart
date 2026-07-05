@@ -26,11 +26,14 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> signUpWithEmail({
     required String email,
     required String password,
+    required String displayName,
   }) async {
-    await _firebaseAuth.createUserWithEmailAndPassword(
+    final credential = await _firebaseAuth.createUserWithEmailAndPassword(
       email: email,
       password: password,
     );
+    await credential.user?.updateDisplayName(displayName.trim());
+    await credential.user?.reload();
   }
 
   @override

@@ -54,12 +54,16 @@ class AuthController extends AsyncNotifier<void> {
     await NotificationService().saveTokenToFirestore();
   }
 
-  Future<void> signUp(String email, String password) async {
+  Future<void> signUp(String email, String password, String displayName) async {
     state = const AsyncValue<void>.loading();
     state = await AsyncValue.guard(
       () => ref
           .read(authRepositoryProvider)
-          .signUpWithEmail(email: email, password: password),
+          .signUpWithEmail(
+            email: email,
+            password: password,
+            displayName: displayName,
+          ),
     );
   }
 
