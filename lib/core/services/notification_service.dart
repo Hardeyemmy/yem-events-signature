@@ -208,6 +208,8 @@ class NotificationService {
       try {
         await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
           'fcmToken': token,
+          'displayName':
+              user.displayName ?? user.email?.split('@')[0] ?? 'Anonymous',
           'updatedAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
         print('🟢 Token saved successfully for ${user.uid}');
