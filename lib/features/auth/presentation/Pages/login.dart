@@ -63,22 +63,10 @@ class _LoginState extends ConsumerState<Login>
     final password = _passwordController.text.trim();
     final displayName = _nameController.text.trim();
 
-    if (!_isLogin) {
-      _InputField(
-        controller: _nameController,
-        label: 'Full Name',
-        icon: Icons.person_outline_rounded,
-
-        validator: (v) {
-          if (v == null || v.trim().isEmpty) {
-            return 'Enter your Name';
-          } else if (v.trim().length < 4) {
-            return 'Name must be at least 4 characters';
-          }
-          return null;
-        },
-      );
-      const SizedBox(height: 16);
+    if (_isLogin) {
+      await authController.signIn(email, password);
+    } else {
+      await authController.signUp(email, password, displayName);
     }
   }
 
@@ -212,8 +200,12 @@ class _LoginState extends ConsumerState<Login>
                           controller: _nameController,
                           label: 'Full name',
                           icon: Icons.person_outline_rounded,
-                          validator: (v) =>
-                              v!.isEmpty ? 'Enter your name' : null,
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty)
+                              return 'Enter your name';
+                            if (v.trim().length < 2) return 'Name too short';
+                            return null;
+                          },
                         ),
                         const SizedBox(height: 16),
                       ],
