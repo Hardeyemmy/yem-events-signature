@@ -45,6 +45,9 @@ class EventRepository {
         .collection('attendees')
         .doc(userId);
     final attendeeDoc = await attendeeRef.get();
+    final safeName = (displayName != null && displayName.trim().isNotEmpty)
+        ? displayName.trim()
+        : email.split('@')[0];
 
     if (attendeeDoc.exists) {
       // ✅ Cancel RSVP — just delete attendee, no notification needed
@@ -57,9 +60,7 @@ class EventRepository {
       batch.set(attendeeRef, {
         'userId': userId,
         'userEmail': email,
-        'displayName': displayName?.isNotEmpty == true
-            ? displayName
-            : email.split('@')[0],
+        'displayName': safeName,
         'joinedAt': FieldValue.serverTimestamp(),
       });
 
@@ -80,9 +81,7 @@ class EventRepository {
               'creatorId': creatorId,
               'eventId': eventId,
               'eventTitle': eventTitle ?? 'an event',
-              'rsvpUserName': displayName?.isNotEmpty == true
-                  ? displayName
-                  : email.split('@')[0],
+              'rsvpUserName': safeName,
               'rsvpUserId': userId,
               'sent': false,
               'createdAt': FieldValue.serverTimestamp(),

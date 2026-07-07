@@ -109,9 +109,19 @@ class RsvpController extends AsyncNotifier<void> {
 
   Future<void> toggleRsvp(String eventId) async {
     print('🔄 toggleRsvp called for eventId: $eventId');
+
     final user = ref.read(currentUserProvider);
     if (user == null) return;
 
+    final displayName =
+        (user.displayName != null && user.displayName!.trim().isNotEmpty)
+        ? user.displayName!.trim()
+        : user.email?.split('@')[0] ?? 'Anonymous';
+
+    print('🟡 toggleRsvp resolved displayName: $displayName');
+
+    print('🟡 toggleRsvp user.displayName: ${user.displayName}');
+    print('🟡 toggleRsvp user.email: ${user.email}');
     state = const AsyncValue<void>.loading();
     final repo = ref.read(eventRepositoryProvider);
 
@@ -120,7 +130,7 @@ class RsvpController extends AsyncNotifier<void> {
         eventId,
         user.uid,
         user.email ?? 'Unknown',
-        user.displayName,
+        displayName,
       );
 
       // ✅ Send emails after successful RSVP
@@ -130,7 +140,7 @@ class RsvpController extends AsyncNotifier<void> {
       // Email to attendee
       await EmailService().sendRsvpConfirmationEmail(
         attendeeEmail: user.email ?? '',
-        attendeeName: user.displayName ?? user.email?.split('@')[0] ?? 'there',
+        attendeeName: displayName,
         eventTitle: event.title,
         eventDate: dateFormat.format(event.date),
         eventLocation: event.location,
