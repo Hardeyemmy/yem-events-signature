@@ -358,7 +358,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
               // ── App version ──────────────────────────
               Text(
-                'YEM Events v1.0.0',
+                'YEM Events v1.1.0',
                 style: TextStyle(
                   color: _textMuted.withOpacity(0.5),
                   fontSize: 12,
