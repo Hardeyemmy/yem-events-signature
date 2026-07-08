@@ -28,6 +28,9 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
     required String displayName,
   }) async {
+    if (displayName.length < 2 || displayName.length > 20) {
+      throw Exception('Display name must be between 2 and 20 characters');
+    }
     final credential = await _firebaseAuth.createUserWithEmailAndPassword(
       email: email,
       password: password,
