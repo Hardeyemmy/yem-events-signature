@@ -69,6 +69,13 @@ class _CreateEventPageState extends ConsumerState<CreateEventPage> {
       maxWidth: 1024,
     );
     if (picked == null) return;
+    final bytes = await picked.readAsBytes();
+    if (bytes.lengthInBytes > 5 * 1024 * 1024) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Image size exceeds 5MB limit')),
+      );
+    }
+
     if (kIsWeb) {
       // Web: read bytes
       final bytes = await picked.readAsBytes();
