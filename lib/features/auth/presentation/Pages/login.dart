@@ -18,6 +18,7 @@ class _LoginState extends ConsumerState<Login>
   final _nameController = TextEditingController();
   bool _isLogin = true;
   bool _obscurePassword = true;
+  final _passwordFocusNode = FocusNode();
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
 
@@ -45,6 +46,7 @@ class _LoginState extends ConsumerState<Login>
     _passwordController.dispose();
     _nameController.dispose();
     _animController.dispose();
+    _passwordFocusNode.dispose();
     super.dispose();
   }
 
@@ -216,6 +218,8 @@ class _LoginState extends ConsumerState<Login>
                         label: 'Email address',
                         icon: Icons.mail_outline_rounded,
                         keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
+                        onFieldSubmitted: (_) => _submit(),
                         validator: (v) =>
                             v!.isEmpty ? 'Enter your email' : null,
                       ),
@@ -227,6 +231,9 @@ class _LoginState extends ConsumerState<Login>
                         label: 'Password',
                         icon: Icons.lock_outline_rounded,
                         obscureText: _obscurePassword,
+                        focusNode: _passwordFocusNode,
+                        textInputAction: TextInputAction.done,
+                        onFieldSubmitted: (_) => _submit(),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscurePassword
@@ -346,7 +353,10 @@ class _InputField extends StatelessWidget {
     this.keyboardType,
     this.obscureText = false,
     this.suffixIcon,
+    this.textInputAction,
+    this.focusNode,
     this.validator,
+    this.onFieldSubmitted,
   });
 
   final TextEditingController controller;
@@ -355,7 +365,10 @@ class _InputField extends StatelessWidget {
   final TextInputType? keyboardType;
   final bool obscureText;
   final Widget? suffixIcon;
+  final TextInputAction? textInputAction;
+  final FocusNode? focusNode;
   final String? Function(String?)? validator;
+  final void Function(String)? onFieldSubmitted;
 
   static const _bg = Color(0xFF1A1A2E);
   static const _accent = Color(0xFF7C6FFF);
@@ -370,6 +383,9 @@ class _InputField extends StatelessWidget {
       keyboardType: keyboardType,
       obscureText: obscureText,
       validator: validator,
+      focusNode: focusNode,
+      textInputAction: textInputAction,
+      onFieldSubmitted: onFieldSubmitted,
       style: const TextStyle(color: _textPrimary, fontSize: 15),
       decoration: InputDecoration(
         labelText: label,
