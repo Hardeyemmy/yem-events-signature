@@ -13,7 +13,7 @@ class MainPage extends ConsumerStatefulWidget {
 }
 
 class _MainPageState extends ConsumerState<MainPage> {
-  int _currentIndex = 0;
+  final _currentIndex = 0;
 
   @override
   Widget build(BuildContext context) {

@@ -77,7 +77,6 @@ class _EventSearchBarState extends ConsumerState<EventSearchBar> {
             controller: _controller,
             style: const TextStyle(fontSize: 14),
             onChanged: (value) {
-              print('🔍 TextField onChanged: $value');
               ref
                   .read(eventFilterControllerProvider.notifier)
                   .setKeyword(value);

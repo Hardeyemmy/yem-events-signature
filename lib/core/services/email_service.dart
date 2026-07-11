@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class EmailService {
@@ -10,7 +11,6 @@ class EmailService {
     required String eventDate,
     required String eventLocation,
   }) async {
-    print('📧 sendRsvpConfirmationEmail called for: $attendeeEmail');
     try {
       final response = await http.post(
         Uri.parse('https://api.emailjs.com/api/v1.0/email/send'),
@@ -30,12 +30,12 @@ class EmailService {
       );
 
       if (response.statusCode == 200) {
-        print('🟢 Confirmation email sent to $attendeeEmail');
+        return;
       } else {
-        print('🔴 EmailJS error ${response.statusCode}: ${response.body}');
+        debugPrint('🔴 EmailJS error ${response.statusCode}: ${response.body}');
       }
     } catch (e) {
-      print('🔴 Failed to send confirmation email: $e');
+      debugPrint('🔴 Failed to send confirmation email: $e');
     }
   }
 
@@ -46,7 +46,6 @@ class EmailService {
     required String eventTitle,
     required int attendeeCount,
   }) async {
-    print('📧 sendCreatorNotificationEmail called for: $creatorEmail');
     try {
       final response = await http.post(
         Uri.parse('https://api.emailjs.com/api/v1.0/email/send'),
@@ -66,12 +65,12 @@ class EmailService {
       );
 
       if (response.statusCode == 200) {
-        print('🟢 Creator notification email sent to $creatorEmail');
+        return;
       } else {
-        print('🔴 EmailJS error ${response.statusCode}: ${response.body}');
+        debugPrint('🔴 EmailJS error ${response.statusCode}: ${response.body}');
       }
     } catch (e) {
-      print('🔴 Failed to send creator email: $e');
+      debugPrint('🔴 Failed to send creator email: $e');
     }
   }
 }

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../events/domains/models/events.dart';
+import 'package:flutter/foundation.dart';
 import '../../../events/domains/models/atendee.dart';
 import '../../../events/domains/models/event_filter.dart';
 
@@ -87,8 +88,7 @@ class EventRepository {
               'createdAt': FieldValue.serverTimestamp(),
             });
           } catch (e) {
-            print('🔴 BATCH WRITE FAILED: $e');
-            print('🔴 Path attempted: notifications/${notifRef.id}');
+            debugPrint('failed to create notification: $e');
           }
         }
       }
