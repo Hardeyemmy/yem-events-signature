@@ -12,12 +12,9 @@ import 'app/app.dart';
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  print('Background message received: ${message.messageId}');
 }
 
 void main() async {
-  debugPrint('🚀🚀🚀 MAIN STARTED 🚀🚀🚀');
-  print('MAIN STARTED PLAIN PRINT TEST');
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: '.env');
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -36,27 +33,19 @@ void main() async {
   // not just once at app startup
   FirebaseAuth.instance.authStateChanges().listen((user) async {
     if (user != null) {
-      print('🟢 Auth state changed — user logged in: ${user.uid}');
+      //print('🟢 Auth state changed — user logged in: ${user.uid}');
       await NotificationService().saveTokenToFirestore();
-    } else {
-      print('🟡 Auth state changed — user logged out');
-    }
+    } else {}
   });
 
   // ✅ Handle notification tap when app was terminated
   final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
   if (initialMessage != null) {
-    print(
-      'App opened from terminated state via notification: ${initialMessage.data}',
-    );
     // You can navigate to the event page here using initialMessage.data['eventId']
   }
 
   // ✅ Handle notification tap when app was in background
-  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-    print('App opened from background via notification: ${message.data}');
-    // You can navigate to the event page here using message.data['eventId']
-  });
+  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {});
 
   runApp(const ProviderScope(child: MyApp()));
 }

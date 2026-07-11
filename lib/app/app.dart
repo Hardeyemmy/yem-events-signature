@@ -14,7 +14,7 @@ class MyApp extends ConsumerWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
-        fontFamily: 'Ariel',
+        fontFamily: 'Roboto',
       ),
       home: const AuthGate(),
       debugShowCheckedModeBanner: false,
