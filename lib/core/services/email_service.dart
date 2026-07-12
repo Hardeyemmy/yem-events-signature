@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class EmailService {
@@ -32,10 +31,12 @@ class EmailService {
       if (response.statusCode == 200) {
         return;
       } else {
-        debugPrint('🔴 EmailJS error ${response.statusCode}: ${response.body}');
+        throw Exception(
+          '🔴 EmailJS error ${response.statusCode}: ${response.body}',
+        );
       }
     } catch (e) {
-      debugPrint('🔴 Failed to send confirmation email: $e');
+      throw Exception('🔴 Failed to send confirmation email: $e');
     }
   }
 
@@ -67,10 +68,12 @@ class EmailService {
       if (response.statusCode == 200) {
         return;
       } else {
-        debugPrint('🔴 EmailJS error ${response.statusCode}: ${response.body}');
+        throw Exception(
+          '🔴 EmailJS error ${response.statusCode}: ${response.body}',
+        );
       }
     } catch (e) {
-      debugPrint('🔴 Failed to send creator email: $e');
+      throw Exception('🔴 Failed to send creator email: $e');
     }
   }
 }

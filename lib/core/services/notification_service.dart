@@ -86,10 +86,10 @@ class NotificationService {
       if (response.statusCode == 200) {
         debugPrint('🟢 Notification sent successfully.');
       } else {
-        debugPrint('🔴 FCM error: ${response.body}');
+        throw Exception('🔴 FCM error: ${response.body}');
       }
     } catch (e) {
-      debugPrint('🔴 Error sending push notifications: $e');
+      throw Exception('🔴 Error sending push notifications: $e');
     }
   }
 
@@ -117,7 +117,7 @@ class NotificationService {
         eventId: eventId,
       );
     } catch (e) {
-      debugPrint('🔴 Error sending RSVP Notification: $e');
+      throw Exception('🔴 Error sending RSVP Notification: $e');
     }
   }
 
@@ -173,7 +173,6 @@ class NotificationService {
 
   Future<void> saveTokenToFirestore() async {
     final user = FirebaseAuth.instance.currentUser;
-    debugPrint('🟡 saveTokenToFirestore called for user: ${user?.uid}');
 
     if (user == null) {
       return;
@@ -190,7 +189,7 @@ class NotificationService {
           'updatedAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
       } catch (e) {
-        debugPrint('🔴 FAILED to save token: $e');
+        throw Exception('🔴 FAILED to save token: $e');
       }
     } else {
       debugPrint(

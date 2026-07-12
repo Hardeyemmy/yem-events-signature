@@ -284,7 +284,7 @@ class _LoginState extends ConsumerState<Login>
                                   ),
                                 ),
                                 child: Text(
-                                  _isLogin ? 'Sign in' : 'Create account',
+                                  _isLogin ? 'Log In' : 'Create account',
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -318,7 +318,7 @@ class _LoginState extends ConsumerState<Login>
                               ),
                             ),
                             child: Text(
-                              _isLogin ? 'Sign up' : 'Sign in',
+                              _isLogin ? 'Sign up' : 'Log In',
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,

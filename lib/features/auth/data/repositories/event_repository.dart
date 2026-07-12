@@ -88,7 +88,7 @@ class EventRepository {
               'createdAt': FieldValue.serverTimestamp(),
             });
           } catch (e) {
-            debugPrint('failed to create notification: $e');
+            throw Exception('failed to create notification: $e');
           }
         }
       }
