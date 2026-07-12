@@ -34,9 +34,7 @@ class EventDetailPage extends ConsumerWidget {
                   Consumer(
                     builder: (context, ref, _) {
                       final user = ref.watch(currentUserProvider);
-                      print('🔵 currentUser uid: ${user?.uid}');
-                      print('🔵 event.creatorId: ${event.creatorId}');
-                      print('🔵 match: ${user?.uid == event.creatorId}');
+
                       if (user != null && event.creatorId == user.uid) {
                         return IconButton(
                           icon: const Icon(Icons.edit),

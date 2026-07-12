@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../events/domains/models/events.dart';
-import 'package:flutter/foundation.dart';
 import '../../../events/domains/models/atendee.dart';
 import '../../../events/domains/models/event_filter.dart';
 
