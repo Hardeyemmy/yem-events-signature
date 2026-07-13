@@ -15,6 +15,35 @@ class HomePage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F7F7),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF1A1A2E),
+        elevation: 0,
+        titleSpacing: 16,
+        title: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                'assets/logo/yemevent_logo.png',
+                height: 32,
+                width: 32,
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(width: 10),
+
+            const Text(
+              'YEM Events',
+              style: TextStyle(
+                color: Color(0xFFF0EFFF),
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.3,
+              ),
+            ),
+          ],
+        ),
+      ),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
