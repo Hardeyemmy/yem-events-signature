@@ -94,3 +94,7 @@ functions/*.log
 *.env
 .env.*.local
 *.log
+.env
+google-services.json
+GoogleService-Info.plist
+/build
