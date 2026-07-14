@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../presentation/widgets/search_bar.dart';
 import '../../../events/domains/models/events.dart';
-import '../../presentation/providers/event_provider.dart';
+import '../providers/event_provider.dart';
+import '../providers/auth_providers.dart';
 import 'event_details_page.dart';
 
 class HomePage extends ConsumerWidget {
@@ -19,29 +20,54 @@ class HomePage extends ConsumerWidget {
         backgroundColor: const Color(0xFF1A1A2E),
         elevation: 0,
         titleSpacing: 16,
-        title: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
-                'assets/logo/yemevent_logo.png',
-                height: 32,
-                width: 32,
-                fit: BoxFit.cover,
-              ),
-            ),
-            const SizedBox(width: 10),
+        title: Consumer(
+          builder: (context, ref, _) {
+            final user = ref.watch(currentUserProvider);
+            final name =
+                user?.displayName?.split(' ').first ??
+                user?.email?.split('@')[0] ??
+                'there';
 
-            const Text(
-              'YEM Events',
-              style: TextStyle(
-                color: Color(0xFFF0EFFF),
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.3,
-              ),
-            ),
-          ],
+            return Row(
+              children: [
+                // ✅ App logo
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.asset(
+                    'assets/logo/yemevent_logo.png',
+                    height: 32,
+                    width: 32,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                // ✅ App name + welcome message
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'YEM Events',
+                      style: TextStyle(
+                        color: Color(0xFFF0EFFF),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    Text(
+                      'Welcome, $name 👋',
+                      style: const TextStyle(
+                        color: Color(0xFF8B8AA8),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
         ),
       ),
       body: SafeArea(

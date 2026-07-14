@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:image_picker/image_picker.dart';
 import '../providers/event_provider.dart';
 
@@ -24,7 +25,7 @@ class _CreateEventPageState extends ConsumerState<CreateEventPage> {
   File? _selectedImage;
   Uint8List? _selectedImageBytes; // <-- Your code
   final _picker = ImagePicker(); // <-- Your code
-  static const String _imgbbApiKey = 'e65dda1999c0ee67415a324643ded9a6';
+  final String? _imgbbApiKey = dotenv.env['IMGBB_API_KEY'];
 
   @override
   void dispose() {

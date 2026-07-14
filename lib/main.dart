@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'core/services/notification_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -33,7 +34,7 @@ void main() async {
   // not just once at app startup
   FirebaseAuth.instance.authStateChanges().listen((user) async {
     if (user != null) {
-      //print('🟢 Auth state changed — user logged in: ${user.uid}');
+      //debugPrint('🟢 Auth state changed — user logged in: ${user.uid}');
       await NotificationService().saveTokenToFirestore();
     } else {}
   });
@@ -46,6 +47,11 @@ void main() async {
 
   // ✅ Handle notification tap when app was in background
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {});
+  // In main.dart
+  FlutterError.onError = (details) {
+    // Log to a service like Sentry or Firebase Crashlytics
+    FirebaseCrashlytics.instance.recordFlutterFatalError(details);
+  };
 
   runApp(const ProviderScope(child: MyApp()));
 }
