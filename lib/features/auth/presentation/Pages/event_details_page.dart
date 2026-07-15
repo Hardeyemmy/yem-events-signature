@@ -271,8 +271,11 @@ class EventDetailPage extends ConsumerWidget {
       ),
       floatingActionButton:
           eventAsync.value != null &&
-              currentUser != null &&
-              eventAsync.value!.creatorId != currentUser.uid
+              eventAsync.value!.date.isBefore(DateTime.now())
+          ? const Chip(label: Text('Event ended'))
+          : eventAsync.value != null &&
+                currentUser != null &&
+                eventAsync.value!.creatorId != currentUser.uid
           ? isAttendingAsync.when(
               data: (isAttending) => FloatingActionButton.extended(
                 onPressed: rsvpState.isLoading
