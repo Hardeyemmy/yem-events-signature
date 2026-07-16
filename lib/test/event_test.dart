@@ -19,5 +19,17 @@ void main() {
       expect(updated.keyword, 'food');
       expect(updated.location, isNull);
     });
+
+    test('copyWith can set keyword to null', () {
+      const filter = EventFilter();
+      final cleared = filter.copyWith(keyword: null);
+      expect(cleared.keyword, isNull);
+    });
+
+    test('copyWith isEmpty returns true after clearing keyword', () {
+      const filter = EventFilter();
+      final cleared = filter.copyWith(keyword: null);
+      expect(cleared.isEmpty, isTrue);
+    });
   });
 }
