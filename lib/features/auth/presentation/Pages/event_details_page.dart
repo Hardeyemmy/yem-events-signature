@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../Pages/edit_event_page.dart';
 import '../providers/event_provider.dart';
 import '../providers/auth_providers.dart';
+import '../../../../core/utils/responsive.dart';
 
 class EventDetailPage extends ConsumerWidget {
   const EventDetailPage({super.key, required this.eventId});
@@ -16,6 +17,8 @@ class EventDetailPage extends ConsumerWidget {
     final isAttendingAsync = ref.watch(isAttendingProvider(eventId));
     final attendeeCountAsync = ref.watch(attendeeCountProvider(eventId));
     final rsvpState = ref.watch(rsvpControllerProvider);
+    final isWide =
+        Responsive.isTablet(context) || Responsive.isDesktop(context);
 
     return Scaffold(
       body: eventAsync.when(
@@ -55,8 +58,8 @@ class EventDetailPage extends ConsumerWidget {
                   ),
                 ],
                 flexibleSpace: FlexibleSpaceBar(
-                  titlePadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
+                  titlePadding: EdgeInsets.symmetric(
+                    horizontal: isWide ? 0 : 16,
                     vertical: 12,
                   ),
                   title: Text(
@@ -125,137 +128,144 @@ class EventDetailPage extends ConsumerWidget {
                 ),
               ),
               SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _InfoRow(
-                        icon: Icons.description,
-                        title: dateFormat.format(event.date),
-                        subtitle: timeFormat.format(event.date),
-                      ),
-                      const SizedBox(height: 16),
-                      _InfoRow(
-                        icon: Icons.location_on,
-                        title: 'Location',
-                        subtitle: event.location,
-                      ),
-                      const SizedBox(height: 16),
-                      _InfoRow(
-                        icon: Icons.person,
-                        title: 'Hosted by',
-                        subtitle: event.creatorName,
-                      ),
-
-                      const SizedBox(height: 16),
-                      attendeeCountAsync.when(
-                        data: (attendanceCount) => _InfoRow(
-                          icon: Icons.people,
-                          title: '$attendanceCount attending',
-                          subtitle: 'Tap RSVP to join',
-                        ),
-                        error: (error, _) => const SizedBox.shrink(),
-                        loading: () => const SizedBox.shrink(),
-                      ),
-                      const SizedBox(height: 16),
-                      const Divider(),
-                      const SizedBox(height: 24),
-                      Text(
-                        'About this event',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        event.description,
-                        style: Theme.of(
-                          context,
-                        ).textTheme.bodyLarge?.copyWith(height: 1.5),
-                      ),
-                      const SizedBox(height: 32),
-                      const Divider(),
-                      const SizedBox(height: 24),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: Responsive.maxContentWidth(context),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Attendees',
-                            style: Theme.of(context).textTheme.titleLarge
-                                ?.copyWith(fontWeight: FontWeight.bold),
+                          _InfoRow(
+                            icon: Icons.description,
+                            title: dateFormat.format(event.date),
+                            subtitle: timeFormat.format(event.date),
                           ),
+                          const SizedBox(height: 16),
+                          _InfoRow(
+                            icon: Icons.location_on,
+                            title: 'Location',
+                            subtitle: event.location,
+                          ),
+                          const SizedBox(height: 16),
+                          _InfoRow(
+                            icon: Icons.person,
+                            title: 'Hosted by',
+                            subtitle: event.creatorName,
+                          ),
+
+                          const SizedBox(height: 16),
                           attendeeCountAsync.when(
-                            data: (count) => Chip(
-                              label: Text('$count going'),
-                              avatar: const Icon(Icons.people, size: 20),
+                            data: (attendanceCount) => _InfoRow(
+                              icon: Icons.people,
+                              title: '$attendanceCount attending',
+                              subtitle: 'Tap RSVP to join',
                             ),
                             error: (error, _) => const SizedBox.shrink(),
                             loading: () => const SizedBox.shrink(),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Consumer(
-                        builder: (context, ref, _) {
-                          final attendeesAsync = ref.watch(
-                            attendeesProvider(eventId),
-                          );
-                          return attendeesAsync.when(
-                            data: (attendees) {
-                              if (attendees.isEmpty) {
-                                return Text(
-                                  'Be the first to RSVP!',
-                                  style: TextStyle(color: Colors.grey[600]),
-                                );
-                              }
-                              return ListView.separated(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemBuilder: (context, index) {
-                                  final attendee = attendees[index];
-                                  return ListTile(
-                                    leading: CircleAvatar(
-                                      child: Text(
-                                        attendee.displayName.isNotEmpty
-                                            ? attendee.displayName
-                                                  .substring(0, 1)
-                                                  .toUpperCase()
-                                            : '?',
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.deepPurple,
+                          const SizedBox(height: 16),
+                          const Divider(),
+                          const SizedBox(height: 24),
+                          Text(
+                            'About this event',
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            event.description,
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodyLarge?.copyWith(height: 1.5),
+                          ),
+                          const SizedBox(height: 32),
+                          const Divider(),
+                          const SizedBox(height: 24),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Attendees',
+                                style: Theme.of(context).textTheme.titleLarge
+                                    ?.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                              attendeeCountAsync.when(
+                                data: (count) => Chip(
+                                  label: Text('$count going'),
+                                  avatar: const Icon(Icons.people, size: 20),
+                                ),
+                                error: (error, _) => const SizedBox.shrink(),
+                                loading: () => const SizedBox.shrink(),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Consumer(
+                            builder: (context, ref, _) {
+                              final attendeesAsync = ref.watch(
+                                attendeesProvider(eventId),
+                              );
+                              return attendeesAsync.when(
+                                data: (attendees) {
+                                  if (attendees.isEmpty) {
+                                    return Text(
+                                      'Be the first to RSVP!',
+                                      style: TextStyle(color: Colors.grey[600]),
+                                    );
+                                  }
+                                  return ListView.separated(
+                                    shrinkWrap: true,
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    itemBuilder: (context, index) {
+                                      final attendee = attendees[index];
+                                      return ListTile(
+                                        leading: CircleAvatar(
+                                          child: Text(
+                                            attendee.displayName.isNotEmpty
+                                                ? attendee.displayName
+                                                      .substring(0, 1)
+                                                      .toUpperCase()
+                                                : '?',
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.deepPurple,
+                                            ),
+                                          ),
                                         ),
-                                      ),
-                                    ),
-                                    title: Text(
-                                      attendee.displayName,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    subtitle: Text(
-                                      'Joined ${DateFormat('MMM d').format(attendee.joinedAt)}',
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.bodySmall,
-                                    ),
+                                        title: Text(
+                                          attendee.displayName,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                        subtitle: Text(
+                                          'Joined ${DateFormat('MMM d').format(attendee.joinedAt)}',
+                                          style: Theme.of(
+                                            context,
+                                          ).textTheme.bodySmall,
+                                        ),
+                                      );
+                                    },
+                                    separatorBuilder: (context, _) =>
+                                        const Divider(height: 1),
+                                    itemCount: attendees.length,
                                   );
                                 },
-                                separatorBuilder: (context, _) =>
-                                    const Divider(height: 1),
-                                itemCount: attendees.length,
+                                error: (err, _) => Text('Error: $err'),
+                                loading: () => const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
                               );
                             },
-                            error: (err, _) => Text('Error: $err'),
-                            loading: () => const Center(
-                              child: CircularProgressIndicator(),
-                            ),
-                          );
-                        },
+                          ),
+                          const SizedBox(height: 100),
+                        ],
                       ),
-                      const SizedBox(height: 100),
-                    ],
+                    ),
                   ),
                 ),
               ),

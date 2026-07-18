@@ -460,10 +460,10 @@ class _EventPreviewStrip extends StatelessWidget {
             itemBuilder: (context, index) {
               final (emoji, title, date) = _events[index];
               return Container(
-                width: 130,
+                width: 80,
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 12,
+                  horizontal: 10,
+                  vertical: 8,
                 ),
                 decoration: BoxDecoration(
                   color: const Color(0xFF1A1A2E),
