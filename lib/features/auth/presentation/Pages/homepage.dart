@@ -6,6 +6,7 @@ import '../../../events/domains/models/events.dart';
 import '../providers/event_provider.dart';
 import '../providers/auth_providers.dart';
 import 'event_details_page.dart';
+import '../../../../core/utils/responsive.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -108,14 +109,51 @@ class HomePage extends ConsumerWidget {
               child: eventsAsync.when(
                 data: (events) {
                   if (events.isEmpty) return const _EmptyState();
+                  final isWide =
+                      Responsive.isTablet(context) ||
+                      Responsive.isDesktop(context);
                   return RefreshIndicator(
                     onRefresh: () async => ref.invalidate(eventsStreamProvider),
-                    child: ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
-                      itemCount: events.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 12),
-                      itemBuilder: (context, index) =>
-                          _EventCard(event: events[index]),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: Responsive.maxContentWidth(context),
+                        ),
+                        child: isWide
+                            ? GridView.builder(
+                                padding: const EdgeInsets.fromLTRB(
+                                  20,
+                                  4,
+                                  20,
+                                  100,
+                                ),
+
+                                gridDelegate:
+                                    SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount:
+                                          Responsive.isDesktop(context) ? 3 : 2,
+                                      crossAxisSpacing: 16,
+                                      mainAxisSpacing: 16,
+                                      childAspectRatio: 0.75,
+                                    ),
+                                itemBuilder: (context, index) =>
+                                    _EventCard(event: events[index]),
+                                itemCount: events.length,
+                              )
+                            : ListView.separated(
+                                padding: const EdgeInsets.fromLTRB(
+                                  20,
+                                  4,
+                                  20,
+                                  100,
+                                ),
+                                itemCount: events.length,
+                                separatorBuilder: (_, __) =>
+                                    const SizedBox(height: 12),
+                                itemBuilder: (context, index) =>
+                                    _EventCard(event: events[index]),
+                              ),
+                      ),
                     ),
                   );
                 },

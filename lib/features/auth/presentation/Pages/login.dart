@@ -116,227 +116,233 @@ class _LoginState extends ConsumerState<Login>
     return Scaffold(
       backgroundColor: _bg,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 32),
-
-              // ── Brand mark ─────────────────────────
-              Row(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: _accentSoft,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: _accent, width: 1.5),
-                    ),
-                    child: const Icon(
-                      Icons.celebration_rounded,
-                      color: _accent,
-                      size: 22,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    'YEM Events',
-                    style: TextStyle(
-                      color: _textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                ],
-              ),
+                  const SizedBox(height: 32),
 
-              const SizedBox(height: 45),
-
-              // ── Headline ───────────────────────────
-              FadeTransition(
-                opacity: _fadeAnim,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      _isLogin ? 'Welcome back.' : 'Create your account.',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: _textPrimary,
-                        fontSize: 40,
-                        fontWeight: FontWeight.w800,
-                        height: 1.1,
-                        letterSpacing: -1,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      _isLogin
-                          ? 'Sign in to manage and discover events.'
-                          : 'Join to create, RSVP, and share events.',
-                      style: const TextStyle(
-                        color: _textMuted,
-                        fontSize: 15,
-                        height: 1.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 44),
-
-              // ── Form ───────────────────────────────
-              FadeTransition(
-                opacity: _fadeAnim,
-                child: Form(
-                  key: _formKey,
-                  child: Column(
+                  // ── Brand mark ─────────────────────────
+                  Row(
                     children: [
-                      // Name field (signup only)
-                      if (!_isLogin) ...[
-                        _InputField(
-                          controller: _nameController,
-                          label: 'Full name',
-                          icon: Icons.person_outline_rounded,
-                          validator: (v) {
-                            if (v == null || v.trim().isEmpty)
-                              return 'Enter your name';
-                            if (v.trim().length < 2) return 'Name too short';
-                            return null;
-                          },
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: _accentSoft,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: _accent, width: 1.5),
                         ),
-                        const SizedBox(height: 16),
-                      ],
-
-                      // Email
-                      _InputField(
-                        controller: _emailController,
-                        label: 'Email address',
-                        icon: Icons.mail_outline_rounded,
-                        keyboardType: TextInputType.emailAddress,
-                        textInputAction: TextInputAction.next,
-                        onFieldSubmitted: (_) => _submit(),
-                        validator: (v) =>
-                            v!.isEmpty ? 'Enter your email' : null,
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Password
-                      _InputField(
-                        controller: _passwordController,
-                        label: 'Password',
-                        icon: Icons.lock_outline_rounded,
-                        obscureText: _obscurePassword,
-                        focusNode: _passwordFocusNode,
-                        textInputAction: TextInputAction.done,
-                        onFieldSubmitted: (_) => _submit(),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility_off_outlined
-                                : Icons.visibility_outlined,
-                            color: _textMuted,
-                            size: 20,
-                          ),
-                          onPressed: () => setState(
-                            () => _obscurePassword = !_obscurePassword,
-                          ),
+                        child: const Icon(
+                          Icons.celebration_rounded,
+                          color: _accent,
+                          size: 22,
                         ),
-                        validator: (v) =>
-                            v!.length < 6 ? 'At least 6 characters' : null,
                       ),
-
-                      const SizedBox(height: 32),
-
-                      // Submit button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 54,
-                        child: authState.isLoading
-                            ? Container(
-                                decoration: BoxDecoration(
-                                  color: _accentSoft,
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                                child: const Center(
-                                  child: SizedBox(
-                                    width: 22,
-                                    height: 22,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.5,
-                                      color: _accent,
-                                    ),
-                                  ),
-                                ),
-                              )
-                            : ElevatedButton(
-                                onPressed: _submit,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: _accent,
-                                  foregroundColor: Colors.white,
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                ),
-                                child: Text(
-                                  _isLogin ? 'Log In' : 'Create account',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    letterSpacing: 0.2,
-                                  ),
-                                ),
-                              ),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // Toggle login/signup
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            _isLogin
-                                ? "Don't have an account?"
-                                : 'Already have an account?',
-                            style: const TextStyle(
-                              color: _textMuted,
-                              fontSize: 14,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: _toggleMode,
-                            style: TextButton.styleFrom(
-                              foregroundColor: _accent,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                              ),
-                            ),
-                            child: Text(
-                              _isLogin ? 'Sign up' : 'Log In',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
+                      const SizedBox(width: 12),
+                      const Text(
+                        'YEM Events',
+                        style: TextStyle(
+                          color: _textPrimary,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.3,
+                        ),
                       ),
                     ],
                   ),
-                ),
+
+                  const SizedBox(height: 45),
+
+                  // ── Headline ───────────────────────────
+                  FadeTransition(
+                    opacity: _fadeAnim,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          _isLogin ? 'Welcome back.' : 'Create your account.',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: _textPrimary,
+                            fontSize: 40,
+                            fontWeight: FontWeight.w800,
+                            height: 1.1,
+                            letterSpacing: -1,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          _isLogin
+                              ? 'Sign in to manage and discover events.'
+                              : 'Join to create, RSVP, and share events.',
+                          style: const TextStyle(
+                            color: _textMuted,
+                            fontSize: 15,
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 44),
+
+                  // ── Form ───────────────────────────────
+                  FadeTransition(
+                    opacity: _fadeAnim,
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          // Name field (signup only)
+                          if (!_isLogin) ...[
+                            _InputField(
+                              controller: _nameController,
+                              label: 'Full name',
+                              icon: Icons.person_outline_rounded,
+                              validator: (v) {
+                                if (v == null || v.trim().isEmpty)
+                                  return 'Enter your name';
+                                if (v.trim().length < 2)
+                                  return 'Name too short';
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+
+                          // Email
+                          _InputField(
+                            controller: _emailController,
+                            label: 'Email address',
+                            icon: Icons.mail_outline_rounded,
+                            keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.next,
+                            onFieldSubmitted: (_) => _submit(),
+                            validator: (v) =>
+                                v!.isEmpty ? 'Enter your email' : null,
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Password
+                          _InputField(
+                            controller: _passwordController,
+                            label: 'Password',
+                            icon: Icons.lock_outline_rounded,
+                            obscureText: _obscurePassword,
+                            focusNode: _passwordFocusNode,
+                            textInputAction: TextInputAction.done,
+                            onFieldSubmitted: (_) => _submit(),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
+                                color: _textMuted,
+                                size: 20,
+                              ),
+                              onPressed: () => setState(
+                                () => _obscurePassword = !_obscurePassword,
+                              ),
+                            ),
+                            validator: (v) =>
+                                v!.length < 6 ? 'At least 6 characters' : null,
+                          ),
+
+                          const SizedBox(height: 32),
+
+                          // Submit button
+                          SizedBox(
+                            width: double.infinity,
+                            height: 54,
+                            child: authState.isLoading
+                                ? Container(
+                                    decoration: BoxDecoration(
+                                      color: _accentSoft,
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                    child: const Center(
+                                      child: SizedBox(
+                                        width: 22,
+                                        height: 22,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2.5,
+                                          color: _accent,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                : ElevatedButton(
+                                    onPressed: _submit,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: _accent,
+                                      foregroundColor: Colors.white,
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      _isLogin ? 'Log In' : 'Create account',
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: 0.2,
+                                      ),
+                                    ),
+                                  ),
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          // Toggle login/signup
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                _isLogin
+                                    ? "Don't have an account?"
+                                    : 'Already have an account?',
+                                style: const TextStyle(
+                                  color: _textMuted,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: _toggleMode,
+                                style: TextButton.styleFrom(
+                                  foregroundColor: _accent,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                  ),
+                                ),
+                                child: Text(
+                                  _isLogin ? 'Sign up' : 'Log In',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // ── Event preview strip ────────────────
+                  _EventPreviewStrip(),
+                ],
               ),
-
-              const SizedBox(height: 20),
-
-              // ── Event preview strip ────────────────
-              _EventPreviewStrip(),
-            ],
+            ),
           ),
         ),
       ),
