@@ -148,7 +148,7 @@ class HomePage extends ConsumerWidget {
                                   100,
                                 ),
                                 itemCount: events.length,
-                                separatorBuilder: (_, __) =>
+                                separatorBuilder: (_, _) =>
                                     const SizedBox(height: 12),
                                 itemBuilder: (context, index) =>
                                     _EventCard(event: events[index]),
