@@ -122,12 +122,13 @@ class _LoginState extends ConsumerState<Login>
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 32),
 
                   // ── Brand mark ─────────────────────────
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Container(
                         width: 40,
@@ -156,7 +157,7 @@ class _LoginState extends ConsumerState<Login>
                     ],
                   ),
 
-                  const SizedBox(height: 45),
+                  const SizedBox(height: 30),
 
                   // ── Headline ───────────────────────────
                   FadeTransition(
@@ -190,7 +191,7 @@ class _LoginState extends ConsumerState<Login>
                     ),
                   ),
 
-                  const SizedBox(height: 44),
+                  const SizedBox(height: 35),
 
                   // ── Form ───────────────────────────────
                   FadeTransition(
@@ -213,7 +214,7 @@ class _LoginState extends ConsumerState<Login>
                                 return null;
                               },
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 14),
                           ],
 
                           // Email
@@ -227,7 +228,7 @@ class _LoginState extends ConsumerState<Login>
                             validator: (v) =>
                                 v!.isEmpty ? 'Enter your email' : null,
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 14),
 
                           // Password
                           _InputField(
@@ -254,7 +255,7 @@ class _LoginState extends ConsumerState<Login>
                                 v!.length < 6 ? 'At least 6 characters' : null,
                           ),
 
-                          const SizedBox(height: 32),
+                          const SizedBox(height: 25),
 
                           // Submit button
                           SizedBox(
@@ -298,7 +299,7 @@ class _LoginState extends ConsumerState<Login>
                                   ),
                           ),
 
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 20),
 
                           // Toggle login/signup
                           Row(
@@ -336,7 +337,7 @@ class _LoginState extends ConsumerState<Login>
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 17),
 
                   // ── Event preview strip ────────────────
                   _EventPreviewStrip(),
@@ -443,6 +444,7 @@ class _EventPreviewStrip extends StatelessWidget {
           padding: EdgeInsets.only(bottom: 12),
           child: Text(
             'HAPPENING SOON',
+            textAlign: TextAlign.center,
             style: TextStyle(
               color: Color(0xFF8B8AA8),
               fontSize: 11,
