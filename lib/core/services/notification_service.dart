@@ -123,7 +123,6 @@ class NotificationService {
 
   Future<void> init() async {
     // Request permission
-    await _messaging.requestPermission(alert: true, badge: true, sound: true);
 
     // Handle background messages
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
