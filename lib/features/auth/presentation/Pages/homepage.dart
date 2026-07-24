@@ -57,7 +57,7 @@ class HomePage extends ConsumerWidget {
                       ),
                     ),
                     Text(
-                      'Welcome, $name 👋',
+                      'Welcome, $name ',
                       style: const TextStyle(
                         color: Color(0xFF8B8AA8),
                         fontSize: 12,
