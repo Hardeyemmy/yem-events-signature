@@ -111,6 +111,7 @@ class RsvpController extends AsyncNotifier<void> {
     final user = ref.read(currentUserProvider);
     if (user == null) return;
 
+    await NotificationService().requestPermission();
     final displayName =
         (user.displayName != null && user.displayName!.trim().isNotEmpty)
         ? user.displayName!.trim()

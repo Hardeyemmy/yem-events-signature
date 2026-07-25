@@ -93,6 +93,15 @@ class NotificationService {
     }
   }
 
+  Future<void> requestPermission() async {
+    final settings = await _messaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+    debugPrint('User granted permission: ${settings.authorizationStatus}');
+  }
+
   // Send RSVP notification — call this after a successful RSVP
   Future<void> sendRsvpNotification({
     required String creatorId,
