@@ -14,11 +14,40 @@ class EventRepository {
     return _eventRef.add(event.toFirestore());
   }
 
+  Future<void> adminDeleteEvent(String eventId) async {
+    final batch = _firestore.batch();
+    final attendees = await _eventRef
+        .doc(eventId)
+        .collection('attendees')
+        .get();
+    for (var doc in attendees.docs) {
+      batch.delete(doc.reference);
+    }
+    batch.delete(_eventRef.doc(eventId));
+    return batch.commit();
+  }
+
   Stream<List<Event>> watchAllEvents() {
     return _eventRef
         .orderBy('date')
         .snapshots()
         .map((snapshot) => snapshot.docs.map(Event.fromFirestore).toList());
+  }
+
+  // ✅ Approve event
+  Future<void> approveEvent(String eventId) {
+    return _eventRef.doc(eventId).update({
+      'status': 'approved',
+      'approvedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  // ✅ Reject event
+  Future<void> rejectEvent(String eventId, String reason) {
+    return _eventRef.doc(eventId).update({
+      'status': 'rejected',
+      'rejectionReason': reason,
+    });
   }
 
   Stream<Event> watchEvent(String eventId) {
