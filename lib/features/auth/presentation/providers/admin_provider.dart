@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../presentation/providers/auth_providers.dart';
+import 'auth_providers.dart';
 
 // check if the current user is an admin
 final isAdminProvider = FutureProvider<bool>((ref) async {
