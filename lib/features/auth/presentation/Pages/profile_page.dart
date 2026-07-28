@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../providers/admin_provider.dart';
+import 'admin_page.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 
 class ProfilePage extends ConsumerStatefulWidget {
@@ -283,6 +285,28 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               // ── Settings list ────────────────────────
               _SettingsSection(
                 children: [
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final isAdminAsync = ref.watch(isAdminProvider);
+                      return isAdminAsync.when(
+                        data: (isAdmin) => isAdmin
+                            ? _SettingsTile(
+                                icon: Icons.admin_panel_settings_rounded,
+                                label: 'Admin Dashboard',
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const AdminDashboard(),
+                                  ),
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                        loading: () => const SizedBox.shrink(),
+                        error: (_, __) => const SizedBox.shrink(),
+                      );
+                    },
+                  ),
+
                   _SettingsTile(
                     icon: Icons.person_outline_rounded,
                     label: 'Edit display name',

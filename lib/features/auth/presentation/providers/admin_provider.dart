@@ -5,12 +5,17 @@ import 'auth_providers.dart';
 // check if the current user is an admin
 final isAdminProvider = FutureProvider<bool>((ref) async {
   final user = ref.watch(currentUserProvider);
-  if (user == null) return false;
+  print('🔵 isAdminProvider — user uid: ${user?.uid}');
+  if (user == null) {
+    print('🔴 isAdminProvider — no user');
+    return false;
+  }
 
   final doc = await FirebaseFirestore.instance
       .collection('admins')
       .doc(user.uid)
       .get();
+  print('🔵 isAdminProvider — doc exists: ${doc.exists}');
   return doc.exists;
 });
 
