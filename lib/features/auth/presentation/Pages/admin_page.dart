@@ -74,7 +74,6 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard>
 
 // ── Events Tab ─────────────────────────────────────────────
 class _EventsTab extends ConsumerWidget {
-  static const _bg = Color(0xFF0F0F1A);
   static const _surface = Color(0xFF1A1A2E);
   static const _textPrimary = Color(0xFFF0EFFF);
   static const _textMuted = Color(0xFF8B8AA8);
