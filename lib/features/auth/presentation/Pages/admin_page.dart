@@ -311,7 +311,7 @@ class _UsersTab extends ConsumerWidget {
             child: Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: const Color(0xFF7C6FFF).withOpacity(0.2),
+                  backgroundColor: const Color(0xFFF2F0FF),
                   child: Text(
                     (user['displayName'] ?? user['email'] ?? '?')[0]
                         .toUpperCase(),
